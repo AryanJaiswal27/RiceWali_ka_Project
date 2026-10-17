@@ -1,6 +1,7 @@
 import json
 import uuid
 import re
+import textwrap
 from datetime import datetime, timezone
 from typing import Any, Optional
 import httpx
@@ -18,7 +19,7 @@ from src.agents import (
 )
 
 # ============================================================================
-# Page Configuration & Industrial Operations Styling
+# Page Configuration & Modern Industrial Operations Design System
 # ============================================================================
 
 st.set_page_config(
@@ -28,253 +29,440 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# High-density industrial CSS: Slate/Charcoal palette, 1px solid #1F2937 borders, sharp corners
-INDUSTRIAL_CSS = """
+# Modern, High-Density Industrial Dark Ops Design System
+MODERN_INDUSTRIAL_CSS = """
 <style>
     /* Global Base Canvas */
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
     html, body, [data-testid="stAppViewContainer"] {
-        background-color: #0B0F19 !important;
-        color: #E5E7EB !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif !important;
+        background-color: #070B14 !important;
+        color: #E2E8F0 !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     }
     
     [data-testid="stHeader"] {
-        background-color: #0B0F19 !important;
-        border-bottom: 1px solid #1F2937 !important;
+        background-color: rgba(7, 11, 20, 0.85) !important;
+        backdrop-filter: blur(12px) !important;
+        border-bottom: 1px solid #1E293B !important;
     }
 
     [data-testid="stSidebar"] {
-        background-color: #111827 !important;
-        border-right: 1px solid #1F2937 !important;
+        background-color: #0D1526 !important;
+        border-right: 1px solid #1E293B !important;
     }
 
-    /* Headings & Labels */
+    /* Headings & Typography */
     h1, h2, h3, h4, h5, h6 {
-        color: #F9FAFB !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-        font-weight: 600 !important;
-        letter-spacing: -0.01em !important;
+        color: #F8FAFC !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em !important;
         text-transform: uppercase !important;
         margin: 0 !important;
     }
 
-    /* Workflow Progression Bar */
-    .workflow-container {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 12px;
-        font-family: "Consolas", monospace;
-        font-size: 0.72rem;
-    }
-    .workflow-step {
-        flex: 1;
-        background-color: #111827;
-        border: 1px solid #1F2937;
-        padding: 8px 10px;
-        border-radius: 2px;
-        text-align: center;
-        color: #9CA3AF;
-        letter-spacing: 0.04em;
-    }
-    .workflow-step.step-active {
-        border-color: #06B6D4 !important;
-        background-color: #083344 !important;
-        color: #38BDF8 !important;
-        font-weight: 700 !important;
-        box-shadow: 0 0 8px rgba(6, 182, 212, 0.25) !important;
-    }
-    .workflow-step.step-success {
-        border-color: #059669 !important;
-        background-color: #064E3B !important;
-        color: #10B981 !important;
-        font-weight: 700 !important;
-    }
-    .workflow-step.step-halt {
-        border-color: #DC2626 !important;
-        background-color: #450A0A !important;
-        color: #EF4444 !important;
-        font-weight: 700 !important;
-    }
-
-    /* Operator Guide Box */
-    .guide-box {
-        background-color: #050811;
-        border: 1px solid #1E293B;
-        border-left: 3px solid #06B6D4;
-        border-radius: 2px;
-        padding: 12px 14px;
-        margin-bottom: 12px;
-        font-family: "Consolas", monospace;
-        font-size: 0.74rem;
-        color: #94A3B8;
-        line-height: 1.5;
-    }
-    .guide-box strong {
-        color: #38BDF8;
-    }
-
-    /* Panel Card Container */
-    .op-panel {
-        background-color: #111827;
-        border: 1px solid #1F2937;
-        border-radius: 2px;
-        padding: 16px;
-        margin-bottom: 14px;
-    }
-
-    .op-panel-header {
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #9CA3AF;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        border-bottom: 1px solid #1F2937;
-        padding-bottom: 8px;
-        margin-bottom: 12px;
+    /* Top Brand & Navbar Bar */
+    .top-navbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 6px 0 12px 0;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #1E293B;
+    }
+    .brand-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: #F8FAFC;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .brand-sub {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        color: #06B6D4;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
     }
 
-    /* Status Badges */
-    .badge-subsystem {
-        display: inline-block;
-        font-family: "Consolas", "Monaco", monospace;
-        font-size: 0.7rem;
+    /* Connected 3-Stage Workflow Stepper */
+    .stepper-bar {
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .step-node {
+        flex: 1;
+        background: #0D1526;
+        border: 1px solid #1E293B;
+        border-radius: 4px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .step-node.active {
+        border-color: #06B6D4 !important;
+        background: linear-gradient(90deg, rgba(6, 182, 212, 0.12) 0%, #0D1526 100%) !important;
+        box-shadow: 0 0 16px rgba(6, 182, 212, 0.2) !important;
+    }
+    .step-node.completed {
+        border-color: #10B981 !important;
+        background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, #0D1526 100%) !important;
+    }
+    .step-node.halted {
+        border-color: #EF4444 !important;
+        background: linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, #0D1526 100%) !important;
+    }
+    .step-idx {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 800;
+        width: 24px;
+        height: 24px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #1E293B;
+        color: #94A3B8;
+    }
+    .step-node.active .step-idx {
+        background: #06B6D4;
+        color: #070B14;
+    }
+    .step-node.completed .step-idx {
+        background: #10B981;
+        color: #070B14;
+    }
+    .step-node.halted .step-idx {
+        background: #EF4444;
+        color: #FFFFFF;
+    }
+    .step-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
         font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 1px;
+        letter-spacing: 0.04em;
+        color: #94A3B8;
+        text-transform: uppercase;
+    }
+    .step-node.active .step-label { color: #38BDF8; }
+    .step-node.completed .step-label { color: #10B981; }
+    .step-node.halted .step-label { color: #EF4444; }
+    .step-status {
+        font-size: 0.65rem;
+        color: #64748B;
+        margin-top: 2px;
+    }
+
+    /* Modern Industrial Cards */
+    .modern-card {
+        background-color: #0D1526;
+        border: 1px solid #1E293B;
+        border-radius: 4px;
+        padding: 16px;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #1E293B;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+    .card-header-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #94A3B8;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .card-header-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        color: #06B6D4;
+    }
+
+    /* Subsystem & Status Badges */
+    .badge-subsystem {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 3px;
         text-transform: uppercase;
         letter-spacing: 0.04em;
     }
-    .badge-cyan { background-color: #083344; color: #06B6D4; border: 1px solid #0E7490; }
-    .badge-emerald { background-color: #064E3B; color: #10B981; border: 1px solid #059669; }
-    .badge-crimson { background-color: #450A0A; color: #EF4444; border: 1px solid #DC2626; }
-    .badge-amber { background-color: #451A03; color: #F59E0B; border: 1px solid #D97706; }
-    .badge-slate { background-color: #1F2937; color: #9CA3AF; border: 1px solid #374151; }
+    .badge-cyan { background-color: #082F49; color: #38BDF8; border: 1px solid #0284C7; }
+    .badge-emerald { background-color: #064E3B; color: #34D399; border: 1px solid #059669; }
+    .badge-crimson { background-color: #450A0A; color: #F87171; border: 1px solid #DC2626; }
+    .badge-amber { background-color: #451A03; color: #FBBF24; border: 1px solid #D97706; }
+    .badge-slate { background-color: #1E293B; color: #94A3B8; border: 1px solid #334155; }
 
-    /* Telemetry Monospace Logs */
-    .mono-log {
-        background-color: #050811;
-        border: 1px solid #1F2937;
-        border-radius: 2px;
-        padding: 12px 14px;
-        font-family: "Consolas", "Monaco", "Courier New", monospace;
-        font-size: 0.82rem;
-        color: #06B6D4;
-        line-height: 1.5;
-        white-space: pre-wrap;
-        word-break: break-all;
+    /* Directive Hero Window Card */
+    .hero-directive {
+        background: #0B1120;
+        border: 1px solid #1E293B;
+        border-left: 4px solid #06B6D4;
+        border-radius: 4px;
+        padding: 16px;
+        margin-bottom: 14px;
+    }
+    .directive-meta-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 10px;
     }
-
-    /* Active Directive Card */
-    .directive-box {
-        background-color: #0F172A;
-        border: 1px solid #334155;
-        border-left: 3px solid #06B6D4;
-        border-radius: 2px;
-        padding: 14px;
-        margin-bottom: 12px;
-    }
-    .directive-title {
+    .directive-step-tag {
+        font-family: 'JetBrains Mono', monospace;
         font-size: 0.72rem;
-        color: #9CA3AF;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin-bottom: 6px;
+        font-weight: 700;
+        color: #38BDF8;
+        letter-spacing: 0.05em;
     }
-    .directive-text {
-        font-size: 0.92rem;
-        color: #F9FAFB;
+    .directive-action-text {
+        font-size: 0.96rem;
         font-weight: 600;
-        line-height: 1.4;
-        margin-bottom: 8px;
+        color: #F8FAFC;
+        line-height: 1.5;
+        margin-bottom: 10px;
     }
-    .citation-box {
-        background-color: #050811;
-        border: 1px solid #1E293B;
-        padding: 6px 10px;
-        font-family: "Consolas", monospace;
-        font-size: 0.72rem;
-        color: #64748B;
-        border-radius: 1px;
-    }
-
-    /* Safety Interlock Crimson Alert */
-    .crimson-interlock {
-        background-color: #2A0808;
-        border: 1px solid #DC2626;
-        border-left: 4px solid #EF4444;
-        border-radius: 2px;
-        padding: 12px 14px;
-        margin-bottom: 14px;
-        color: #FCA5A5;
-        font-family: "Consolas", monospace;
-        font-size: 0.8rem;
-        line-height: 1.45;
-    }
-
-    /* Resolution Confidence Digital Meter */
-    .meter-container {
-        background-color: #050811;
+    
+    /* Terminal Console Display Block */
+    .terminal-code-block {
+        background: #030712;
         border: 1px solid #1F2937;
-        border-radius: 2px;
-        padding: 16px 12px;
+        border-radius: 4px;
+        padding: 10px 14px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        color: #38BDF8;
+        line-height: 1.45;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .terminal-code-block::before {
+        content: "$";
+        color: #10B981;
+        font-weight: 700;
+    }
+
+    .citation-banner {
+        background-color: #060B16;
+        border: 1px solid #1E293B;
+        border-radius: 3px;
+        padding: 6px 10px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        color: #64748B;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* Operator Fast Action Prompt */
+    .operator-action-prompt {
+        background: rgba(6, 182, 212, 0.06);
+        border: 1px solid #0E7490;
+        border-radius: 3px;
+        padding: 8px 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        color: #38BDF8;
+        margin-top: 10px;
+        line-height: 1.4;
+    }
+
+    /* Safety Interlock Crimson Banner */
+    .crimson-interlock-hero {
+        background: #2D0A0A;
+        border: 1px solid #DC2626;
+        border-left: 5px solid #EF4444;
+        border-radius: 4px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+        color: #FECACA;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        line-height: 1.5;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
+    }
+
+    /* Modern Confidence Digital Gauge */
+    .confidence-meter-card {
+        background: #0A0F1D;
+        border: 1px solid #1E293B;
+        border-radius: 4px;
+        padding: 18px 14px;
         text-align: center;
         margin-bottom: 14px;
+        position: relative;
+        overflow: hidden;
     }
-    .meter-readout {
-        font-family: "Consolas", "Monaco", monospace;
-        font-size: 2.8rem;
-        font-weight: 700;
+    .confidence-meter-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #1E293B;
+    }
+    .confidence-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 3.2rem;
+        font-weight: 800;
         line-height: 1.0;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.03em;
     }
-    .meter-subtext {
+    .confidence-subtitle {
         font-size: 0.7rem;
-        font-weight: 600;
-        color: #9CA3AF;
+        font-weight: 700;
+        color: #94A3B8;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         margin-top: 6px;
     }
-
-    /* High-Density Hardware Lock Table */
-    .hardware-lock-table {
+    .confidence-progress-bar-bg {
         width: 100%;
-        border-collapse: collapse;
-        font-family: "Consolas", monospace;
-        font-size: 0.75rem;
-        margin-bottom: 12px;
+        height: 6px;
+        background: #1E293B;
+        border-radius: 3px;
+        margin-top: 10px;
+        overflow: hidden;
     }
-    .hardware-lock-table td {
-        padding: 6px 8px;
-        border: 1px solid #1F2937;
-        background-color: #050811;
+    .confidence-progress-fill {
+        height: 100%;
+        transition: width 0.4s ease;
     }
-    .hardware-lock-table td.label-cell {
-        color: #9CA3AF;
-        width: 45%;
+
+    /* Compatibility & Safety Verification Matrix */
+    .compat-matrix {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .compat-item {
+        background: #090E1A;
+        border: 1px solid #1E293B;
+        border-radius: 3px;
+        padding: 8px 10px;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .compat-item-label {
+        font-size: 0.65rem;
+        color: #64748B;
         text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 3px;
     }
-    .hardware-lock-table td.value-cell {
-        color: #06B6D4;
+    .compat-item-val {
+        font-size: 0.74rem;
         font-weight: 700;
     }
 
-    /* Form Inputs & BaseWeb Containers */
+    /* Event Timeline Stream */
+    .timeline-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 320px;
+        overflow-y: auto;
+    }
+    .timeline-entry {
+        background: #090E1A;
+        border: 1px solid #1E293B;
+        border-radius: 3px;
+        padding: 10px 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        transition: border-color 0.15s ease;
+    }
+    .timeline-entry:hover {
+        border-color: #334155;
+    }
+    .timeline-entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #161F30;
+        padding-bottom: 4px;
+        margin-bottom: 6px;
+    }
+
+    /* Console Stream Feed */
+    .console-stream-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+    .console-bubble {
+        background: #060B16;
+        border: 1px solid #1E293B;
+        border-radius: 3px;
+        padding: 8px 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        line-height: 1.45;
+    }
+
+    /* Architecture Tour Box */
+    .architecture-tour-card {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 10px 0;
+    }
+    .arch-pillar {
+        background: #090E1A;
+        border: 1px solid #1E293B;
+        border-radius: 3px;
+        padding: 10px 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        line-height: 1.45;
+    }
+    .arch-pillar-title {
+        color: #38BDF8;
+        font-weight: 700;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+    }
+
+    /* Form Inputs & BaseWeb */
     div[data-baseweb="input"],
     div[data-baseweb="textarea"],
     div[data-baseweb="select"] > div,
     input, textarea, select {
-        background-color: #050811 !important;
-        background: #050811 !important;
-        border: 1px solid #1F2937 !important;
-        color: #F3F4F6 !important;
-        font-family: "Consolas", monospace !important;
-        font-size: 0.82rem !important;
-        border-radius: 2px !important;
+        background-color: #060B16 !important;
+        background: #060B16 !important;
+        border: 1px solid #1E293B !important;
+        color: #F8FAFC !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.8rem !important;
+        border-radius: 4px !important;
     }
     div[data-baseweb="input"]:focus-within,
     div[data-baseweb="textarea"]:focus-within,
@@ -284,58 +472,10 @@ INDUSTRIAL_CSS = """
         box-shadow: 0 0 0 1px #06B6D4 !important;
     }
     textarea::placeholder, input::placeholder {
-        color: #64748B !important;
+        color: #475569 !important;
     }
 
-    /* Select Dropdown Menu & Popovers */
-    div[data-baseweb="popover"],
-    div[data-baseweb="menu"],
-    ul[data-baseweb="menu"] {
-        background-color: #111827 !important;
-        border: 1px solid #334155 !important;
-        color: #F3F4F6 !important;
-    }
-    li[data-baseweb="menu-item"] {
-        background-color: #111827 !important;
-        color: #E5E7EB !important;
-        font-family: "Consolas", monospace !important;
-        font-size: 0.8rem !important;
-    }
-    li[data-baseweb="menu-item"]:hover,
-    li[data-baseweb="menu-item"][aria-selected="true"] {
-        background-color: #1F2937 !important;
-        color: #06B6D4 !important;
-    }
-
-    /* Expander Container & Header */
-    div[data-testid="stExpander"] {
-        background-color: #111827 !important;
-        border: 1px solid #1F2937 !important;
-        border-radius: 2px !important;
-        margin-bottom: 12px !important;
-    }
-    div[data-testid="stExpander"] summary {
-        background-color: #111827 !important;
-        color: #9CA3AF !important;
-        font-family: "Consolas", monospace !important;
-        font-size: 0.76rem !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
-    }
-    div[data-testid="stExpander"] summary:hover {
-        color: #06B6D4 !important;
-    }
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-        background-color: #0B0F19 !important;
-        border-top: 1px solid #1F2937 !important;
-        padding: 12px !important;
-    }
-
-    /* =========================================================================
-       UNIVERSAL HIGH-CONTRAST INDUSTRIAL BUTTON STYLING
-       Eliminates white-on-white button rendering across all Streamlit variants
-       ========================================================================= */
+    /* Universal High-Contrast Industrial Buttons */
     button,
     button[kind="secondary"],
     button[kind="primary"],
@@ -344,90 +484,50 @@ INDUSTRIAL_CSS = """
     div.stButton > button,
     div[data-testid="stFormSubmitButton"] > button,
     div[data-testid="stDownloadButton"] > button {
-        background-color: #161E2E !important;
-        background: #161E2E !important;
+        background-color: #111A2E !important;
+        background: #111A2E !important;
         color: #38BDF8 !important;
-        border: 1px solid #334155 !important;
-        border-radius: 2px !important;
-        font-family: "Consolas", "Monaco", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        border: 1px solid #2A3854 !important;
+        border-radius: 4px !important;
+        font-family: 'JetBrains Mono', -apple-system, sans-serif !important;
         font-size: 0.74rem !important;
         font-weight: 700 !important;
         letter-spacing: 0.04em !important;
         text-transform: uppercase !important;
-        padding: 8px 12px !important;
+        padding: 8px 14px !important;
+        min-height: 38px !important;
         box-shadow: none !important;
         outline: none !important;
-        height: auto !important;
-        min-height: 38px !important;
-        white-space: normal !important;
-        word-break: break-word !important;
-        text-align: center !important;
-        transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease !important;
+        transition: all 0.15s ease !important;
     }
 
-    /* Force all text elements inside buttons to inherit high-contrast colors */
-    button p,
-    button span,
-    button div,
-    button label,
-    div.stButton > button p,
-    div.stButton > button span,
+    button p, button span, button div,
+    div.stButton > button p, div.stButton > button span,
     div[data-testid="stFormSubmitButton"] > button p,
-    div[data-testid="stFormSubmitButton"] > button span,
-    div[data-testid="stDownloadButton"] > button p,
-    div[data-testid="stDownloadButton"] > button span {
+    div[data-testid="stDownloadButton"] > button p {
         color: #38BDF8 !important;
         background: transparent !important;
-        background-color: transparent !important;
         font-family: inherit !important;
         font-size: inherit !important;
         font-weight: inherit !important;
         margin: 0 !important;
-        padding: 0 !important;
-        white-space: normal !important;
     }
 
-    /* Button Hover States */
     button:hover,
     div.stButton > button:hover,
-    div[data-testid="stFormSubmitButton"] > button:hover,
     div[data-testid="stDownloadButton"] > button:hover {
-        background-color: #1E293B !important;
-        background: #1E293B !important;
+        background-color: #1E2D4A !important;
         border-color: #06B6D4 !important;
         color: #FFFFFF !important;
-        box-shadow: 0 0 8px rgba(6, 182, 212, 0.3) !important;
+        box-shadow: 0 0 12px rgba(6, 182, 212, 0.35) !important;
     }
-    button:hover p,
-    button:hover span,
-    button:hover div {
+    button:hover p, button:hover span {
         color: #FFFFFF !important;
     }
 
-    /* Button Active & Focus States */
-    button:active,
-    button:focus,
-    button:focus-visible,
-    div.stButton > button:active,
-    div.stButton > button:focus,
-    div[data-testid="stFormSubmitButton"] > button:active,
-    div[data-testid="stFormSubmitButton"] > button:focus {
-        background-color: #0F172A !important;
-        background: #0F172A !important;
-        border-color: #38BDF8 !important;
-        color: #38BDF8 !important;
-        box-shadow: 0 0 0 1px #06B6D4 !important;
-        outline: none !important;
-    }
-    button:active p, button:focus p,
-    button:active span, button:focus span {
-        color: #38BDF8 !important;
-    }
-
-    /* High-Impact Primary Submit Button [COMMIT OBSERVATION & ADVANCE] */
+    /* Primary Accent Submit Button */
     div[data-testid="stFormSubmitButton"] > button {
         background-color: #0E7490 !important;
-        background: #0E7490 !important;
         border: 1px solid #06B6D4 !important;
         color: #FFFFFF !important;
         min-height: 42px !important;
@@ -439,33 +539,37 @@ INDUSTRIAL_CSS = """
     }
     div[data-testid="stFormSubmitButton"] > button:hover {
         background-color: #0891B2 !important;
-        background: #0891B2 !important;
         border-color: #38BDF8 !important;
-        color: #FFFFFF !important;
-        box-shadow: 0 0 12px rgba(6, 182, 212, 0.5) !important;
+        box-shadow: 0 0 14px rgba(6, 182, 212, 0.55) !important;
     }
 
-    /* Formal Download Buttons */
-    div[data-testid="stDownloadButton"] > button {
-        background-color: #0B1120 !important;
+    /* Expander Elements */
+    div[data-testid="stExpander"] {
+        background-color: #0D1526 !important;
         border: 1px solid #1E293B !important;
+        border-radius: 4px !important;
+        margin-bottom: 12px !important;
+    }
+    div[data-testid="stExpander"] summary {
+        background-color: #0D1526 !important;
+        color: #94A3B8 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.74rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+    }
+    div[data-testid="stExpander"] summary:hover {
         color: #06B6D4 !important;
     }
-    div[data-testid="stDownloadButton"] > button p {
-        color: #06B6D4 !important;
-    }
-    div[data-testid="stDownloadButton"] > button:hover {
-        background-color: #111827 !important;
-        border-color: #06B6D4 !important;
-        color: #38BDF8 !important;
-    }
-    div[data-testid="stDownloadButton"] > button:hover p {
-        color: #38BDF8 !important;
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        background-color: #070B14 !important;
+        border-top: 1px solid #1E293B !important;
+        padding: 12px !important;
     }
 </style>
 """
 
-st.markdown(INDUSTRIAL_CSS, unsafe_allow_html=True)
+st.markdown(MODERN_INDUSTRIAL_CSS, unsafe_allow_html=True)
 
 
 # ============================================================================
@@ -530,7 +634,14 @@ def query_diagnostic_engine(message: str) -> dict[str, Any]:
     """
     Submits turn to FastAPI REST backend (handling 0.0.0.0 -> 127.0.0.1 loopback),
     falling back seamlessly to direct DiagnosticCoordinator calls if backend is offline.
+    Ensures local session state is completely synchronized for seamless UI rendering.
     """
+    session = get_or_create_session(st.session_state.session_id)
+    session.model_id = st.session_state.model_id
+    session.firmware_version = st.session_state.firmware_version
+    session.operating_environment = st.session_state.operating_environment
+    session.error_code = st.session_state.error_code
+
     connect_host = "127.0.0.1" if settings.api_host in ("0.0.0.0", "") else settings.api_host
     url = f"http://{connect_host}:{settings.api_port}/api/diagnose"
     payload = {
@@ -548,16 +659,19 @@ def query_diagnostic_engine(message: str) -> dict[str, Any]:
             resp = client.post(url, json=payload)
             if resp.status_code == 200:
                 data = resp.json()
+                if "timeline" in data:
+                    from src.agents import EvidenceStep
+                    session.timeline = [
+                        EvidenceStep(**t) if isinstance(t, dict) else t for t in data["timeline"]
+                    ]
+                if not session.planned_steps:
+                    SafeStepPlannerAgent.generate_plan(session)
+                session.current_step_index = len(session.timeline)
                 return data
     except Exception:
         pass
 
     # 2. Seamless Direct Coordinator Fallback
-    session = get_or_create_session(st.session_state.session_id)
-    session.model_id = st.session_state.model_id
-    session.firmware_version = st.session_state.firmware_version
-    session.operating_environment = st.session_state.operating_environment
-    session.error_code = st.session_state.error_code
     return DiagnosticCoordinator.process_turn(st.session_state.session_id, message)
 
 
@@ -587,53 +701,57 @@ def get_disruption_badge(disruption_level: str, requires_tech: bool) -> tuple[st
         return "HARDWARE ISOLATION", "badge-crimson"
     elif disruption_level == "LOW_DISRUPTION":
         return "SERVICE AFFECTING", "badge-amber"
-    return "MINIMAL (NON-INVASIVE)", "badge-cyan"
+    return "NON-INVASIVE CHECK", "badge-cyan"
+
+
+# Load Error Codes Database for metadata previews
+try:
+    ERROR_CODES_DB = _load_error_codes_db()
+except Exception:
+    ERROR_CODES_DB = {}
+
+active_code_meta = ERROR_CODES_DB.get(st.session_state.error_code, {})
 
 
 # ============================================================================
-# Header Telemetry Bar
+# Modern Top Navigation & Status Bar
 # ============================================================================
 
 is_maas_online = check_maas_gateway_online()
 
-head_col1, head_col2, head_col3 = st.columns([2.6, 1.4, 0.8])
+nav_col1, nav_col2, nav_col3 = st.columns([2.5, 1.5, 0.7])
 
-with head_col1:
+with nav_col1:
     st.markdown(
         """
-        <div style="padding: 2px 0 8px 0;">
-            <div style="font-size: 0.68rem; color: #9CA3AF; letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Consolas', monospace;">
-                Mission-Critical Infrastructure // Automated Diagnostic Terminal
-            </div>
-            <div style="font-size: 1.18rem; font-weight: 700; color: #F9FAFB; letter-spacing: -0.01em;">
-                INDUSTRIAL ASSET DIAGNOSTIC CONSOLE // ARPX-CORE SERIES
-            </div>
+        <div style="padding: 2px 0;">
+            <div class="brand-sub">Mission-Critical Operations // Autonomous AI Diagnostic Console</div>
+            <div class="brand-title">INDUSTRIAL ASSET DIAGNOSTIC TERMINAL</div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-with head_col2:
+with nav_col2:
     badge_html = (
-        '<span class="badge-subsystem badge-emerald" title="Connected to remote cloud model endpoint">[MAAS CLOUD GATEWAY: ONLINE]</span>'
+        '<span class="badge-subsystem badge-emerald" title="Live MaaS cloud reasoning endpoint connected">● LIVE MAAS GATEWAY: ONLINE</span>'
         if is_maas_online else
-        '<span class="badge-subsystem badge-cyan" title="Operating with zero-dependency deterministic local fallback engine">[AUTONOMOUS AIRGAPPED ENGINE: ACTIVE]</span>'
+        '<span class="badge-subsystem badge-cyan" title="Operating with zero-dependency autonomous local rule & retrieval engine">● AUTONOMOUS AIRGAPPED ENGINE</span>'
     )
     asset_tag = "ARPX-800" if "Apex" in st.session_state.model_id else "CS4K-48T"
     st.markdown(
         f"""
-        <div style="background-color: #111827; border: 1px solid #1F2937; padding: 6px 10px; border-radius: 2px; font-family: 'Consolas', monospace; font-size: 0.72rem; text-align: right;">
-            <div>GATEWAY: <span style="color: #F9FAFB; font-weight: 700;">{st.session_state.model_id} [{asset_tag}]</span></div>
-            <div style="margin-top: 2px;">{badge_html} | <span style="color: #64748B;">{st.session_state.session_id}</span></div>
+        <div style="background-color: #0D1526; border: 1px solid #1E293B; padding: 6px 12px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; text-align: right;">
+            <div>GATEWAY: <span style="color: #F8FAFC; font-weight: 700;">{st.session_state.model_id}</span> [{asset_tag}]</div>
+            <div style="margin-top: 3px;">{badge_html} &nbsp;|&nbsp; <span style="color: #64748B;">{st.session_state.session_id}</span></div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-with head_col3:
-    if st.button("RESET SESSION", use_container_width=True, help="Reset diagnostic state: Clears all timeline records, resets confidence to 0%, and restarts with a new session ID."):
-        new_sess = f"SESS-{uuid.uuid4().hex[:8].upper()}"
-        st.session_state.session_id = new_sess
+with nav_col3:
+    if st.button("RESET SESSION", use_container_width=True, help="Reset Diagnostic State: Clears all timeline records, resets confidence to 0%, and generates a fresh session ID."):
+        st.session_state.session_id = f"SESS-{uuid.uuid4().hex[:8].upper()}"
         st.session_state.chat_history = []
         st.session_state.resolution_confidence = 0
         st.session_state.diagnostic_status = "INITIALIZING"
@@ -641,60 +759,95 @@ with head_col3:
         st.session_state.active_step_data = None
         st.rerun()
 
-st.markdown("<hr style='border: none; border-top: 1px solid #1F2937; margin: 4px 0 10px 0;'/>", unsafe_allow_html=True)
+st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
 
 # ============================================================================
-# Dynamic 3-Step Operator Workflow Progression Bar
+# Dynamic 3-Stage Connected Workflow Stepper
 # ============================================================================
 
 is_started = len(st.session_state.chat_history) > 0
 is_resolved = st.session_state.diagnostic_status == "RESOLVED"
 is_halted = st.session_state.diagnostic_status in ("MANDATORY_HALT_TECHNICIAN_REQUIRED", "ESCALATED")
 
-# Dynamic step highlighting
-step1_class = "step-active" if not is_started else "step-success"
-step2_class = "step-active" if (is_started and not is_resolved and not is_halted) else ("step-success" if (is_resolved or is_halted) else "")
+# Stepper node classes
+step1_class = "active" if not is_started else "completed"
+step2_class = "active" if (is_started and not is_resolved and not is_halted) else ("completed" if (is_resolved or is_halted) else "")
 
 if is_resolved:
-    step3_class = "step-success"
-    step3_title = "STEP 3: RESOLUTION CONFIRMED (98%)"
+    step3_class = "completed"
+    step3_idx_text = "✓"
+    step3_main = "RESOLVED (98%)"
+    step3_sub = "Target fault verified resolved"
 elif is_halted:
-    step3_class = "step-halt"
-    step3_title = "STEP 3: SAFETY INTERLOCK HALT & ESCALATION"
+    step3_class = "halted"
+    step3_idx_text = "!"
+    step3_main = "SAFETY HALT"
+    step3_sub = "Tier-3 technician dispatch required"
 elif is_started:
-    step3_class = "step-active"
-    step3_title = "STEP 3: RECORD OBSERVATIONS & AUDIT"
+    step3_class = "active"
+    step3_idx_text = "3"
+    step3_main = "RECORD & AUDIT"
+    step3_sub = "Submit telemetry & build audit"
 else:
     step3_class = ""
-    step3_title = "STEP 3: OBSERVE & RESOLVE OR ESCALATE"
+    step3_idx_text = "3"
+    step3_main = "RESOLUTION AUDIT"
+    step3_sub = "Verify fix or export package"
+
+step1_sub = "Asset identity locked" if is_started else "Configure model & code"
+step2_sub = "Executing isolation directive" if (is_started and not is_resolved and not is_halted) else ("Directives executed" if (is_resolved or is_halted) else "Standby for isolation")
 
 st.markdown(
     f"""
-    <div class="workflow-container">
-        <div class="workflow-step {step1_class}" title="Step 1: Configure device identity (Model ID, Firmware Version, Fault Code)">
-            <strong>[STEP 1]</strong> CONFIGURE ASSET & FAULT CODE
+    <div class="stepper-bar">
+        <div class="step-node {step1_class}" title="Step 1: Set Target Hardware Asset Model, Firmware Build, and Diagnostic Fault Code">
+            <div class="step-idx">{'✓' if is_started else '1'}</div>
+            <div>
+                <div class="step-label">1. ASSET & FAULT CONFIGURATION</div>
+                <div class="step-status">{step1_sub}</div>
+            </div>
         </div>
-        <div class="workflow-step {step2_class}" title="Step 2: Initialize procedural plan and review approved OEM diagnostic directive">
-            <strong>[STEP 2]</strong> EXECUTE APPROVED ISOLATION DIRECTIVE
+        <div class="step-node {step2_class}" title="Step 2: Execute OEM diagnostic directives authorized by the Safe-Step Sequencer">
+            <div class="step-idx">{'✓' if (is_resolved or is_halted) else '2'}</div>
+            <div>
+                <div class="step-label">2. ISOLATION DIRECTIVE</div>
+                <div class="step-status">{step2_sub}</div>
+            </div>
         </div>
-        <div class="workflow-step {step3_class}" title="Step 3: Submit empirical observation to update timeline and achieve 98% resolution or safety dispatch">
-            <strong>[STEP 3]</strong> {step3_title}
+        <div class="step-node {step3_class}" title="Step 3: Submit observations to reach confirmed 98% resolution or safety escalation">
+            <div class="step-idx">{step3_idx_text}</div>
+            <div>
+                <div class="step-label">3. {step3_main}</div>
+                <div class="step-status">{step3_sub}</div>
+            </div>
         </div>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Collapsible Interactive Guide with Architecture Tooltips
-with st.expander("[?] OPERATOR GUIDE & ARCHITECTURE TOOLTIPS (HOW THIS CONSOLE WORKS)", expanded=False):
+# Collapsible Architecture & Operator Guide
+with st.expander("OPERATOR GUIDE // HOW THE 4-STAGE AI ENGINE WORKS", expanded=False):
     st.markdown(
         """
-        <div class="guide-box">
-            <div><strong>STAGE 1 - PARAMETER GATING:</strong> The Symptom Clarifier Agent requires verified Model ID, Firmware, and Environment. If any parameter is omitted, procedural execution halts to prevent cross-model mistakes.</div>
-            <div style="margin-top: 6px;"><strong>STAGE 2 - COMPATIBILITY GATE:</strong> Mathematical metadata filtering strictly isolates manuals. Apex Router Pro-X queries never retrieve CoreSwitch 4000 procedures.</div>
-            <div style="margin-top: 6px;"><strong>STAGE 3 - SAFE-STEP SEQUENCER:</strong> Directives progress from least disruptive (software queries) to physical cleaning. If an invasive procedure is reached, the Crimson Safety Interlock halts execution to prevent electrical or laser hazards.</div>
-            <div style="margin-top: 6px;"><strong>STAGE 4 - EVIDENCE TIMELINE & REVIEW:</strong> Every observation is recorded in an immutable audit trail. The digital meter calculates quantitative Resolution Confidence (0% to 100%).</div>
+        <div class="architecture-tour-card">
+            <div class="arch-pillar">
+                <div class="arch-pillar-title">1. PARAMETER GATING</div>
+                The Symptom Clarifier Agent enforces strict parameter completeness (Model ID, Firmware, Operating Context). Missing parameters prevent execution to avoid erroneous diagnosis.
+            </div>
+            <div class="arch-pillar">
+                <div class="arch-pillar-title">2. COMPATIBILITY LOCK</div>
+                Vector database manual retrieval pre-filters strictly on target hardware metadata. Procedures for Apex Router Pro-X can never cross-contaminate CoreSwitch 4000.
+            </div>
+            <div class="arch-pillar">
+                <div class="arch-pillar-title">3. SAFE-STEP SEQUENCER</div>
+                Troubleshooting progresses strictly from least-disruptive software checks (CLI telemetry) to physical inspection. Critical invasive steps trigger safety locks.
+            </div>
+            <div class="arch-pillar">
+                <div class="arch-pillar-title">4. EVIDENCE AUDIT</div>
+                Every operator observation is timestamped into an immutable audit trail. Quantitative Resolution Confidence is calculated mathematically (0% to 100%).
+            </div>
         </div>
         """,
         unsafe_allow_html=True
@@ -702,85 +855,83 @@ with st.expander("[?] OPERATOR GUIDE & ARCHITECTURE TOOLTIPS (HOW THIS CONSOLE W
 
 
 # ============================================================================
-# Telemetry Ribbon Configuration (Expandable Hardware Locking)
+# Two-Column Modern Operational Layout
 # ============================================================================
 
-with st.expander("HARDWARE ASSET SPECIFICATIONS & DIAGNOSTIC FAULT CODES", expanded=False):
-    t_col1, t_col2, t_col3, t_col4 = st.columns(4)
-    with t_col1:
-        st.session_state.model_id = st.selectbox(
-            "Hardware Asset Model",
-            options=["Apex Router Pro-X", "CoreSwitch 4000"],
-            index=0 if "Apex" in st.session_state.model_id else 1,
-            help="Select the exact target network gateway. The Compatibility Gate ensures only manuals for this exact model are queried."
-        )
-    with t_col2:
-        st.session_state.firmware_version = st.text_input(
-            "Firmware Revision",
-            value=st.session_state.firmware_version,
-            help="Active firmware build. Required by the Symptom Clarifier to validate semantic version compatibility."
-        )
-    with t_col3:
-        st.session_state.operating_environment = st.text_input(
-            "Operating Environment Profile",
-            value=st.session_state.operating_environment,
-            help="Physical operating deployment context (e.g. Cold Aisle, Edge POP). Used to set baseline thermal and power thresholds."
-        )
-    with t_col4:
-        try:
-            codes_dict = _load_error_codes_db()
-            code_choices = list(codes_dict.keys())
-        except Exception:
-            code_choices = ["OPT-001", "ERR-ARPX-101", "ERR-CS4K-215"]
-        
-        st.session_state.error_code = st.selectbox(
-            "Diagnostic Fault Code (Target)",
-            options=code_choices,
-            index=0 if st.session_state.error_code not in code_choices else code_choices.index(st.session_state.error_code),
-            help="Select the diagnostic fault code registered on hardware management registers (e.g. OPT-001 for optical signal loss)."
-        )
-
-
-# ============================================================================
-# Two-Column Operational Layout
-# ============================================================================
-
-col_left, col_right = st.columns([1.25, 0.75])
-
-# Fetch active session state from memory
 current_session = get_or_create_session(st.session_state.session_id)
+col_left, col_right = st.columns([1.22, 0.78])
 
 # ----------------------------------------------------------------------------
-# Left Column: Diagnostic Terminal & Procedural Sequencer
+# Left Column: Diagnostic Command Center
 # ----------------------------------------------------------------------------
 with col_left:
+    
+    # 1. Hardware Asset & Diagnostic Configuration Deck
     st.markdown(
         """
-        <div class="op-panel-header">
-            <span>DIAGNOSTIC TERMINAL // PROCEDURAL SEQUENCER</span>
-            <span style="font-family: 'Consolas', monospace; color: #06B6D4;">STANDARD: IEEE 802.3 / NEBS L3</span>
-        </div>
+        <div class="modern-card" style="padding: 14px 16px;">
+            <div class="card-header-bar" style="margin-bottom: 10px; padding-bottom: 8px;">
+                <div class="card-header-title">
+                    <span>ASSET PROFILE & DIAGNOSTIC FAULT SETUP</span>
+                </div>
+                <div class="card-header-tag">GATE: STRICT METADATA LOCK</div>
+            </div>
         """,
         unsafe_allow_html=True
     )
 
-    # If sequence not started, provide activation trigger
-    if not st.session_state.chat_history:
+    cfg_col1, cfg_col2 = st.columns([1, 1])
+    with cfg_col1:
+        model_options = ["Apex Router Pro-X", "CoreSwitch 4000"]
+        st.session_state.model_id = st.selectbox(
+            "Target Hardware Asset",
+            options=model_options,
+            index=0 if "Apex" in st.session_state.model_id else 1,
+            help="Select the exact target network hardware model. Compatibility gating restricts RAG manual queries strictly to this hardware."
+        )
+    with cfg_col2:
+        code_choices = list(ERROR_CODES_DB.keys()) if ERROR_CODES_DB else ["OPT-001", "ERR-ARPX-101", "ERR-CS4K-215"]
+        st.session_state.error_code = st.selectbox(
+            "Target Diagnostic Fault Code",
+            options=code_choices,
+            index=0 if st.session_state.error_code not in code_choices else code_choices.index(st.session_state.error_code),
+            help="Select the active diagnostic fault code from the hardware register (e.g. OPT-001 for optical transceiver signal loss)."
+        )
+
+    cfg_col3, cfg_col4 = st.columns([1, 1])
+    with cfg_col3:
+        st.session_state.firmware_version = st.text_input(
+            "Firmware Build Release",
+            value=st.session_state.firmware_version,
+            help="Operating firmware version. Used by Symptom Clarifier Agent to validate semver compatibility."
+        )
+    with cfg_col4:
+        st.session_state.operating_environment = st.text_input(
+            "Deployment Environment Context",
+            value=st.session_state.operating_environment,
+            help="Operating deployment environment (e.g. Datacenter Cold Aisle, Edge POP). Used to set baseline thermal/environmental expectations."
+        )
+
+    # Active Fault Code Metadata Quick Banner
+    if active_code_meta:
+        sev_color = "#EF4444" if active_code_meta.get("severity") == "CRITICAL" else ("#F59E0B" if active_code_meta.get("severity") == "HIGH" else "#06B6D4")
         st.markdown(
             f"""
-            <div class="mono-log">
-[STANDBY: DIAGNOSTIC GATE READY]
-Target Hardware Asset  : {st.session_state.model_id}
-Firmware Build Release : {st.session_state.firmware_version}
-Environmental Context  : {st.session_state.operating_environment}
-Target Fault Code      : {st.session_state.error_code}
-
-Initiate procedural isolation check to sequence non-disruptive telemetry routines.
+            <div style="background: #060B16; border: 1px solid #1E293B; border-left: 3px solid {sev_color}; padding: 8px 10px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                    <span style="color: #94A3B8;">SUBSYSTEM: <strong style="color: #F8FAFC;">{active_code_meta.get('subsystem', 'N/A')}</strong></span>
+                    <span style="color: {sev_color}; font-weight: 700;">SEVERITY: {active_code_meta.get('severity', 'NORMAL')}</span>
+                </div>
+                <div style="color: #CBD5E1;">SYMPTOM: {active_code_meta.get('symptom', 'No symptom metadata')}</div>
             </div>
             """,
             unsafe_allow_html=True
         )
-        if st.button("INITIALIZE ASSET ISOLATION SEQUENCE", use_container_width=True, help="Loads authorized OEM manuals, pre-filters compatibility, and initiates Diagnostic Step 01."):
+
+    # If isolation sequence not initialized, show prominent start button
+    if not st.session_state.chat_history:
+        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+        if st.button("▶ INITIALIZE ASSET ISOLATION SEQUENCE", use_container_width=True, help="Initiates procedural isolation check: Queries authorized manuals, loads non-disruptive Step 01."):
             init_msg = (
                 f"Model: {st.session_state.model_id}, "
                 f"Firmware: {st.session_state.firmware_version}, "
@@ -798,6 +949,14 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             })
             st.rerun()
 
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Synchronize UI configurations with active session state
+    current_session.model_id = st.session_state.model_id
+    current_session.firmware_version = st.session_state.firmware_version
+    current_session.operating_environment = st.session_state.operating_environment
+    current_session.error_code = st.session_state.error_code
+
     # Determine Active Step Metadata
     active_step = None
     step_num = 1
@@ -812,14 +971,13 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             active_step = current_session.planned_steps[-1]
             step_num = total_steps
     elif st.session_state.chat_history:
-        # Generate initial plan if missing
         SafeStepPlannerAgent.generate_plan(current_session)
         if current_session.planned_steps:
             active_step = current_session.planned_steps[0]
             step_num = 1
             total_steps = len(current_session.planned_steps)
 
-    # 1. Active Check Card Rendering
+    # 2. Hero Active Directive Card (when sequence active)
     if active_step:
         subsystem_tag = get_subsystem_category(active_step.get("action", ""), st.session_state.error_code)
         disrupt_text, disrupt_badge = get_disruption_badge(
@@ -827,90 +985,80 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             active_step.get("requires_authorized_technician", False)
         )
         citation_ref = active_step.get("source_ref", "Corporate IT ESM-NET-2026-V4")
+        action_text = active_step.get("action", "")
+        cmd_match = re.search(r"'(.*?)'", action_text)
+        cli_command = cmd_match.group(1) if cmd_match else None
+        cmd_block = f'<div class="terminal-code-block">{cli_command}</div>' if cli_command else ''
+        hero_html = f"""<div class="hero-directive">
+<div class="directive-meta-bar">
+<span class="directive-step-tag">DIAGNOSTIC DIRECTIVE // STEP {step_num:02d} OF {total_steps:02d}</span>
+<div>
+<span class="badge-subsystem badge-cyan">{subsystem_tag}</span>
+<span class="badge-subsystem {disrupt_badge}">{disrupt_text}</span>
+</div>
+</div>
+<div class="directive-action-text">{action_text}</div>
+{cmd_block}
+<div class="citation-banner">
+<span>SOURCE: {citation_ref}</span>
+<span>AUTHORITY: OEM CERTIFIED ESM-NET-2026</span>
+</div>
+<div class="operator-action-prompt">
+<strong>[OPERATOR ACTION REQUIRED]</strong> Execute the directive above on target device. Record the empirical result or telemetry reading in the console below, or trigger a test simulation preset.
+</div>
+</div>"""
+        st.markdown(hero_html, unsafe_allow_html=True)
 
-        st.markdown(
-            f"""
-            <div class="op-panel" style="border-left: 3px solid #06B6D4;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-family: 'Consolas', monospace; font-size: 0.72rem; color: #9CA3AF; font-weight: 700;">
-                        DIAGNOSTIC STEP {step_num:02d} / {total_steps:02d}
-                    </span>
-                    <div>
-                        <span class="badge-subsystem badge-cyan" title="Target hardware subsystem classification">{subsystem_tag}</span>
-                        <span class="badge-subsystem {disrupt_badge}" title="Operational disruption risk rating">{disrupt_text}</span>
-                    </div>
-                </div>
-                <div class="directive-title">APPROVED DIAGNOSTIC DIRECTIVE</div>
-                <div class="directive-text">{active_step.get('action')}</div>
-                <div class="citation-box">
-                    Source: {citation_ref} | Authority: OEM Certified ESM-NET-2026-V4
-                </div>
-                <div style="font-size: 0.7rem; color: #38BDF8; font-family: 'Consolas', monospace; margin-top: 8px; border-top: 1px solid #1E293B; padding-top: 6px;">
-                    [OPERATOR INSTRUCTION] Execute the command above on your management terminal. Then type the observed outcome in the console below (or click a test preset) and click 'COMMIT OBSERVATION'.
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # 2. Safety Interlock Warning Banner (Prominent Crimson)
+    # 3. Safety Interlock Warning Card (Crimson)
     is_halt = (
         st.session_state.diagnostic_status == "MANDATORY_HALT_TECHNICIAN_REQUIRED"
         or (active_step and active_step.get("requires_authorized_technician"))
     )
 
     if is_halt:
-        st.markdown(
-            """
-            <div class="crimson-interlock">
-                <strong>[CRITICAL SAFETY INTERLOCK ENGAGED: HIGH VOLTAGE / LASER RADIATION HAZARD - STOP PROCEDURE - FIELD TECHNICIAN DISPATCH MANDATORY]</strong><br/>
-                Safety Directive: Physical line card reseating, high-speed backplane inspection, or transceiver replacement on energized equipment requires Certified Field Technician authorization. Manual disassembly is blocked under NEBS L3 compliance.
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        crimson_html = textwrap.dedent("""
+<div class="crimson-interlock-hero">
+    <strong>CRITICAL SAFETY INTERLOCK ENGAGED: HIGH VOLTAGE / LASER RADIATION HAZARD</strong><br/>
+    Safety Directive: Physical line card reseating, high-speed backplane inspection, or transceiver replacement on energized equipment requires Certified Field Technician authorization. Manual disassembly is blocked under NEBS L3 compliance.
+</div>
+        """).strip()
+        st.markdown(crimson_html, unsafe_allow_html=True)
 
-    # 3. Interactive Dialogue Terminal History
-    if st.session_state.chat_history:
-        st.markdown("<div style='font-size: 0.7rem; color: #9CA3AF; font-family: \"Consolas\", monospace; text-transform: uppercase; margin-bottom: 6px;'>CHRONOLOGICAL CONSOLE STREAM:</div>", unsafe_allow_html=True)
-        # Display up to last 4 console items
-        for entry in st.session_state.chat_history[-4:]:
-            is_op = entry["role"] == "OPERATOR"
-            tag_color = "#9CA3AF" if is_op else "#06B6D4"
-            prefix = "OPERATOR TELEMETRY RECORD" if is_op else "SEQUENCER DIRECTIVE"
-            st.markdown(
-                f"""
-                <div class="mono-log" style="border-left: 2px solid {tag_color}; padding: 8px 12px; margin-bottom: 6px;">
-                    <div style="font-size: 0.68rem; color: #64748B; margin-bottom: 3px;">{entry['timestamp']} UTC // {prefix}</div>
-                    <div style="color: {'#E5E7EB' if is_op else '#06B6D4'};">{entry['content']}</div>
+    # 4. Operator Telemetry Submission Form
+    st.markdown(
+        """
+        <div class="modern-card">
+            <div class="card-header-bar">
+                <div class="card-header-title">
+                    <span>OPERATOR OBSERVATION CONSOLE</span>
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+                <div class="card-header-tag">INPUT: CLI TELEMETRY OR PHYSICAL AUDIT</div>
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    # 4. Operator Observation Console & Presets
-    st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
     with st.form("observation_form", clear_on_submit=True):
         operator_input = st.text_area(
-            "OPERATOR OBSERVATION CONSOLE",
-            placeholder="Operator physical observation or CLI telemetry output...",
-            height=78,
-            help="Type your CLI telemetry readout (e.g., optical power, drop counters) or physical observation here. The Resolution Review Agent evaluates this against expected baselines."
+            "Empirical Operator Telemetry Readout",
+            placeholder="Type telemetry output (e.g., optical power dBm, error counters, drop statistics) or physical inspection findings...",
+            height=76,
+            label_visibility="collapsed",
+            help="Submit your CLI telemetry readout or physical observation. The Resolution Review Agent evaluates this against OEM thresholds."
         )
         commit_btn = st.form_submit_button(
-            "[COMMIT OBSERVATION & ADVANCE]",
-            help="Submits your observation to the Resolution Review Agent. Computes confidence and advances to the next authorized step."
+            "[COMMIT TELEMETRY & ADVANCE STEP]",
+            use_container_width=True,
+            help="Submits your observation to the Resolution Review Agent. Updates confidence score and advances to next authorized step."
         )
 
         if commit_btn and operator_input.strip():
-            # Append operator observation
             st.session_state.chat_history.append({
                 "role": "OPERATOR",
                 "content": operator_input.strip(),
                 "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")
             })
             
-            # Process turn through engine
             engine_resp = query_diagnostic_engine(operator_input.strip())
             st.session_state.diagnostic_status = engine_resp.get("status", st.session_state.diagnostic_status)
             st.session_state.resolution_confidence = engine_resp.get("confidence", st.session_state.resolution_confidence)
@@ -924,12 +1072,12 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             })
             st.rerun()
 
-    # Preset Telemetry Buttons for One-Click Verification
-    st.markdown("<div style='font-size: 0.7rem; color: #9CA3AF; font-family: \"Consolas\", monospace; text-transform: uppercase; margin-top: 6px;'>ONE-CLICK TEST TELEMETRY PRESETS (HOVER FOR DETAILS):</div>", unsafe_allow_html=True)
-    b_col1, b_col2, b_col3 = st.columns(3)
+    # Fast One-Click Test Simulation Presets
+    st.markdown("<div style='font-size: 0.68rem; color: #94A3B8; font-family: \"JetBrains Mono\", monospace; text-transform: uppercase; margin: 10px 0 6px 0;'>ONE-CLICK TEST TELEMETRY PRESETS (HOVER TO PREVIEW):</div>", unsafe_allow_html=True)
+    p_col1, p_col2, p_col3 = st.columns(3)
 
-    with b_col1:
-        if st.button("PRESET 1: SFP RX Power (-28.2 dBm)", use_container_width=True, help="Simulates an abnormal optical power reading below the -24.0 dBm threshold. Logs VERIFIED_ABNORMAL in the timeline and advances to cleaning."):
+    with p_col1:
+        if st.button("PRESET 1: SFP RX Power (-28.2 dBm)", use_container_width=True, help="Simulates optical power below the -24.0 dBm threshold. Logs abnormal reading and advances to cleaning directive."):
             p1_text = "CLI telemetry 'show interfaces wan0 optical-diagnostics' reports SFP RX Power sub-threshold (-28.2 dBm), LOS asserted abnormal"
             st.session_state.chat_history.append({"role": "OPERATOR", "content": p1_text, "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
             resp = query_diagnostic_engine(p1_text)
@@ -940,7 +1088,7 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             st.session_state.chat_history.append({"role": "SYSTEM", "content": resp.get("message", ""), "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
             st.rerun()
 
-    with b_col2:
+    with p_col2:
         if st.button("PRESET 2: Cleaned End-Face (-11.5 dBm)", use_container_width=True, help="Simulates successful ferrule cleaning, restoring normal power (-11.5 dBm) and triggering 98% FAULT RESOLVED."):
             p2_text = "Optical fiber end-face cleaned; power restored to -11.5 dBm, nominal operational status verified"
             st.session_state.chat_history.append({"role": "OPERATOR", "content": p2_text, "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
@@ -952,7 +1100,7 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             st.session_state.chat_history.append({"role": "SYSTEM", "content": resp.get("message", ""), "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
             st.rerun()
 
-    with b_col3:
+    with p_col3:
         if st.button("PRESET 3: PSU High Voltage Alert", use_container_width=True, help="Simulates an internal power supply fault to test the deterministic Crimson Safety Interlock halt."):
             p3_text = "Internal PSU capacitor bank humming; high voltage alert, breaker tripped abnormal"
             st.session_state.chat_history.append({"role": "OPERATOR", "content": p3_text, "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
@@ -964,119 +1112,162 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             st.session_state.chat_history.append({"role": "SYSTEM", "content": resp.get("message", ""), "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
             st.rerun()
 
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # 5. Live Console Stream Feed (Collapsible / Compact)
+    if st.session_state.chat_history:
+        with st.expander(f"LIVE INTERACTION CONSOLE FEED ({len(st.session_state.chat_history)} ENTRIES)", expanded=False):
+            st.markdown("<div class='console-stream-feed'>", unsafe_allow_html=True)
+            for entry in st.session_state.chat_history:
+                is_op = entry["role"] == "OPERATOR"
+                tag_color = "#38BDF8" if is_op else "#10B981"
+                prefix = "OPERATOR TELEMETRY" if is_op else "SYSTEM AGENT"
+                st.markdown(
+                    f"""
+                    <div class="console-bubble" style="border-left: 3px solid {tag_color};">
+                        <div style="font-size: 0.65rem; color: #64748B; margin-bottom: 2px;">{entry['timestamp']} UTC // <span style="color: {tag_color}; font-weight: 700;">{prefix}</span></div>
+                        <div style="color: {'#E2E8F0' if is_op else '#38BDF8'};">{entry['content']}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ----------------------------------------------------------------------------
 # Right Column: Audit, Telemetry & Resolution Package
 # ----------------------------------------------------------------------------
 with col_right:
-    st.markdown(
-        """
-        <div class="op-panel-header">
-            <span>AUDIT, TELEMETRY & RESOLUTION PACKAGE</span>
-            <span style="font-family: 'Consolas', monospace; color: #10B981;">AUDIT: IMMUTABLE</span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # 1. Quantitative Resolution Confidence Meter
+    
+    # 1. Quantitative Resolution Confidence Meter Card
     conf_val = st.session_state.resolution_confidence
     if st.session_state.diagnostic_status == "RESOLVED":
         meter_status_str = "FAULT RESOLVED"
         meter_color = "#10B981"
+        bar_fill_color = "#10B981"
         badge_style = "badge-emerald"
     elif st.session_state.diagnostic_status in ("MANDATORY_HALT_TECHNICIAN_REQUIRED", "ESCALATED"):
         meter_status_str = "ESCALATION MANDATED"
         meter_color = "#EF4444"
+        bar_fill_color = "#EF4444"
         badge_style = "badge-crimson"
     else:
         meter_status_str = "DIAGNOSING"
         meter_color = "#06B6D4"
+        bar_fill_color = "#06B6D4"
         badge_style = "badge-cyan"
 
-    st.markdown(
-        f"""
-        <div class="meter-container" title="Quantitative Confidence calculated dynamically: 15-75% during isolation | 98% upon confirmed fault clearance | 94% on mandatory safety dispatch">
-            <div class="meter-readout" style="color: {meter_color};">{conf_val}%</div>
-            <div class="meter-subtext">
-                QUANTITATIVE RESOLUTION CONFIDENCE // <span class="badge-subsystem {badge_style}">{meter_status_str}</span>
-            </div>
+    meter_html = textwrap.dedent(f"""
+<div class="confidence-meter-card" title="Quantitative Confidence calculated dynamically: 15-75% during isolation | 98% upon confirmed fault clearance | 94% on mandatory safety dispatch">
+    <div class="confidence-number" style="color: {meter_color};">{conf_val}%</div>
+    <div class="confidence-subtitle">
+        RESOLUTION CONFIDENCE &nbsp;|&nbsp; <span class="badge-subsystem {badge_style}">{meter_status_str}</span>
+    </div>
+    <div class="confidence-progress-bar-bg">
+        <div class="confidence-progress-fill" style="width: {conf_val}%; background-color: {bar_fill_color};"></div>
+    </div>
+</div>
+    """).strip()
+    st.markdown(meter_html, unsafe_allow_html=True)
+
+    # 2. Compatibility & Safety Verification Matrix
+    compat_html = textwrap.dedent(f"""
+<div class="compat-matrix">
+    <div class="compat-item" title="Model compatibility lock prevents cross-model manual hallucination">
+        <div class="compat-item-label">MODEL GATE</div>
+        <div class="compat-item-val" style="color: #10B981;">MATCHED ({st.session_state.model_id[:13]})</div>
+    </div>
+    <div class="compat-item" title="Firmware semver verified against authorized manual baseline">
+        <div class="compat-item-label">FIRMWARE GATE</div>
+        <div class="compat-item-val" style="color: #10B981;">VERIFIED ({st.session_state.firmware_version})</div>
+    </div>
+    <div class="compat-item" title="Operating environment profile context">
+        <div class="compat-item-label">ENVIRONMENT</div>
+        <div class="compat-item-val" style="color: #38BDF8;">COLD AISLE (DC)</div>
+    </div>
+    <div class="compat-item" title="Technician safety clearance level">
+        <div class="compat-item-label">SAFETY CLEARANCE</div>
+        <div class="compat-item-val" style="color: {'#EF4444' if is_halt else '#10B981'};">
+            {'TIER-3 CERTIFIED' if is_halt else 'TIER-1 OPERATOR'}
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+    </div>
+</div>
+    """).strip()
+    st.markdown(compat_html, unsafe_allow_html=True)
 
-    # 2. Compatibility Gate Status Table
+    # 3. Chronological Evidence Timeline Card
     st.markdown(
-        f"""
-        <table class="hardware-lock-table" title="Hardware Compatibility Gate enforces strict metadata pre-filtering on vector queries">
-            <tr>
-                <td class="label-cell">Target Model Gate</td>
-                <td class="value-cell" style="color: #10B981;">MATCHED ({st.session_state.model_id[:16]})</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Firmware Compatibility</td>
-                <td class="value-cell" style="color: #10B981;">VERIFIED ({st.session_state.firmware_version})</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Environment Profile</td>
-                <td class="value-cell" style="color: #06B6D4;">INDUSTRIAL_DC (COLD AISLE)</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Safety Authorization Tier</td>
-                <td class="value-cell" style="color: {'#EF4444' if is_halt else '#10B981'};">
-                    {'TIER-3 CERTIFIED FIELD TECH' if is_halt else 'TIER-1 OPERATOR CLEAR'}
-                </td>
-            </tr>
-        </table>
+        """
+        <div class="modern-card">
+            <div class="card-header-bar">
+                <div class="card-header-title">
+                    <span>IMMUTABLE EVIDENCE AUDIT LOG</span>
+                </div>
+                <div class="card-header-tag" style="color: #10B981;">AUDIT: SEALED</div>
+            </div>
         """,
         unsafe_allow_html=True
     )
 
-    # 3. Chronological Evidence Timeline
     timeline_steps = current_session.timeline
-
-    st.markdown("<div style='font-size: 0.72rem; color: #9CA3AF; font-family: \"Consolas\", monospace; text-transform: uppercase; margin-bottom: 6px;'>CHRONOLOGICAL EVIDENCE AUDIT TRAIL:</div>", unsafe_allow_html=True)
 
     if not timeline_steps:
         st.markdown(
             """
-            <div style="background-color: #050811; border: 1px dashed #1F2937; padding: 12px; font-family: 'Consolas', monospace; font-size: 0.74rem; color: #64748B; text-align: center;">
-                STANDBY: EVIDENCE TIMELINE INITIALIZING
+            <div style="background-color: #060B16; border: 1px dashed #1E293B; border-radius: 4px; padding: 18px 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #64748B; text-align: center;">
+                STANDBY: EVIDENCE TIMELINE INITIALIZING<br/>
+                <span style="font-size: 0.65rem; color: #475569;">Execute diagnostic checks to record chronological verification.</span>
             </div>
             """,
             unsafe_allow_html=True
         )
     else:
-        # Display timeline entries (most recent first or chronological)
+        st.markdown("<div class='timeline-container'>", unsafe_allow_html=True)
         for s in timeline_steps:
             if s.verification_status == "VERIFIED_NORMAL":
                 s_badge = "badge-emerald"
+                border_color = "#10B981"
             elif s.verification_status == "VERIFIED_ABNORMAL":
                 s_badge = "badge-crimson"
+                border_color = "#EF4444"
             elif s.verification_status == "BLOCKED":
                 s_badge = "badge-crimson"
+                border_color = "#EF4444"
             else:
                 s_badge = "badge-amber"
+                border_color = "#F59E0B"
 
             st.markdown(
                 f"""
-                <div style="background-color: #050811; border: 1px solid #1F2937; border-left: 3px solid {'#10B981' if s.verification_status == 'VERIFIED_NORMAL' else '#EF4444'}; border-radius: 1px; padding: 8px 10px; margin-bottom: 6px; font-family: 'Consolas', monospace; font-size: 0.74rem;">
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #111827; padding-bottom: 3px; margin-bottom: 4px;">
-                        <span style="color: #9CA3AF;">STEP {s.step_index:02d} // {s.timestamp[11:19]} UTC</span>
+                <div class="timeline-entry" style="border-left: 3px solid {border_color};">
+                    <div class="timeline-entry-header">
+                        <span style="color: #94A3B8; font-weight: 700;">STEP {s.step_index:02d} // {s.timestamp[11:19]} UTC</span>
                         <span class="badge-subsystem {s_badge}">{s.verification_status}</span>
                     </div>
-                    <div style="color: #F3F4F6; margin-bottom: 2px;"><strong>ACTION:</strong> {s.action_executed[:55]}...</div>
-                    <div style="color: #06B6D4;"><strong>OBSERVED:</strong> {s.user_reported_observation[:60]}...</div>
+                    <div style="color: #E2E8F0; margin-bottom: 3px;"><strong style="color: #94A3B8;">DIRECTIVE:</strong> {s.action_executed[:50]}...</div>
+                    <div style="color: #38BDF8;"><strong style="color: #94A3B8;">OBSERVED:</strong> {s.user_reported_observation[:55]}...</div>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # 4. Formal Record Export Controls
-    st.markdown("<div style='font-size: 0.72rem; color: #9CA3AF; font-family: \"Consolas\", monospace; text-transform: uppercase; margin: 12px 0 6px 0;'>FORMAL RECORD EXPORT CONTROLS:</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    # Ensure escalation record exists or can be generated
+    # 4. Formal Incident Record Export Controls Deck
+    st.markdown(
+        """
+        <div class="modern-card">
+            <div class="card-header-bar">
+                <div class="card-header-title">
+                    <span>INCIDENT EXPORT & ITSM DISPATCH</span>
+                </div>
+                <div class="card-header-tag">CERTIFIED RECORD</div>
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
+
     if not st.session_state.escalation_record:
         if st.button("PREPARE FORMAL INCIDENT RECORD", use_container_width=True, help="Compiles the immutable evidence audit trail, required spare parts, and safety directives into a formal Tier-3 incident package."):
             pkg = ResolutionReviewAgent.generate_escalation_package(
@@ -1116,7 +1307,7 @@ with col_right:
         dl_col1, dl_col2 = st.columns(2)
         with dl_col1:
             st.download_button(
-                label="[DOWNLOAD FORMAL ESCALATION RECORD (JSON)]",
+                label="[JSON EXPORT]",
                 data=json_payload,
                 file_name=f"{esc_data.get('incident_id', 'INC')}_ESCALATION_RECORD.json",
                 mime="application/json",
@@ -1125,10 +1316,12 @@ with col_right:
             )
         with dl_col2:
             st.download_button(
-                label="[EXPORT INCIDENT AUDIT REPORT (MARKDOWN)]",
+                label="[MARKDOWN REPORT]",
                 data=md_payload,
                 file_name=f"{esc_data.get('incident_id', 'INC')}_AUDIT_REPORT.md",
                 mime="text/markdown",
                 use_container_width=True,
                 help="Exports a formatted human-readable incident audit log in Markdown format."
             )
+
+    st.markdown("</div>", unsafe_allow_html=True)
