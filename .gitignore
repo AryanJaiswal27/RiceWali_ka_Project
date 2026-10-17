@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables & secrets
+.env
+
+# Vector store cache & temporary databases
+vector_store_data/
+
+# Log files
+*.log
+fastapi_service.log
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE & Editor caches
+.vscode/
+.idea/
+*.swp
+.DS_Store

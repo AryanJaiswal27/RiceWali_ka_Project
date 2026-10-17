@@ -1,0 +1,189 @@
+{
+  "OPT-001": {
+    "code": "OPT-001",
+    "model": "Apex Router Pro-X",
+    "subsystem": "WAN Optical Interface",
+    "symptom": "Optical Transceiver Signal Loss / Rx Power Below Threshold (-24.0 dBm)",
+    "description": "The primary SFP28 WAN interface indicates severe optical carrier attenuation. Rx optical power has dropped below -24.0 dBm operating limit.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "Level 1 operator may clean optical connectors and verify patch panel mating. Transceiver replacement inside energized chassis requires Certified Field Technician.",
+    "initial_isolation_checks": [
+      "Inspect patch cord LC connector mating and verify latch engagement.",
+      "Check optical Tx/Rx polarity orientation on transceiver port 1.",
+      "Execute CLI command 'show interfaces wan0 optical-diagnostics' to read Rx power levels.",
+      "Inspect optical dust caps and clean LC ferrule using standard lint-free fiber cassette cleaner."
+    ],
+    "applicable_firmware": ">=v4.0.0"
+  },
+  "ERR-ARPX-101": {
+    "code": "ERR-ARPX-101",
+    "model": "Apex Router Pro-X",
+    "subsystem": "WAN Optical Interface",
+    "symptom": "WAN Optical Transceiver Signal Loss (Rx Loss of Signal / LOS asserted)",
+    "description": "The primary SFP28 WAN interface indicates loss of optical carrier signal. Optical Rx power drops below -24 dBm threshold.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "Level 1 operator may clean optical connectors and verify patch panel patching. Chassis opening or optical transceiver replacement inside hot enclosure requires Certified Field Technician.",
+    "initial_isolation_checks": [
+      "Inspect patch cord LC connector mating and verify latch engagement.",
+      "Check optical Tx/Rx polarity orientation on transceiver port 1.",
+      "Execute CLI command 'show interfaces wan0 optical-diagnostics' to read Rx power levels.",
+      "Inspect optical dust caps and clean LC ferrule using standard lint-free fiber cassette cleaner."
+    ],
+    "applicable_firmware": ">=v4.2.0"
+  },
+  "ERR-ARPX-204": {
+    "code": "ERR-ARPX-204",
+    "model": "Apex Router Pro-X",
+    "subsystem": "Routing Engine & Control Plane",
+    "symptom": "BGP Peer Session Flapping / Route Convergence Exhaustion",
+    "description": "External BGP session resets cyclically due to TCP hold timer expiry or prefix limit exceeding allocated TCAM capacity.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "Operator can adjust prefix limits and soft-reset peering via management plane. Core routing engine firmware flashing requires Tier-3 Network Architect authorization.",
+    "initial_isolation_checks": [
+      "Check BGP neighbor state using 'show ip bgp summary' and review hold time negotiations.",
+      "Inspect CPU utilization on Control Processor Core 0 via 'show system resources'.",
+      "Verify MTU configuration matches peer link standard (1500 vs 9000 bytes).",
+      "Inspect prefix filter list to confirm total inbound routes do not exceed 1,500,000 prefixes."
+    ],
+    "applicable_firmware": ">=v4.0.0"
+  },
+  "ERR-ARPX-310": {
+    "code": "ERR-ARPX-310",
+    "model": "Apex Router Pro-X",
+    "subsystem": "Thermal & Chassis Cooling",
+    "symptom": "High Internal Junction Thermal Warning (Junction Temp > 88 C)",
+    "description": "Central ASIC thermal sensor reports temperature exceeding safe operating threshold. Throttling protocol activated.",
+    "severity": "WARNING",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "External air inlet cleaning and ambient room temperature verification allowed for site operator. Internal chassis fan module replacement or heatsink repasting requires Authorized Field Technician.",
+    "initial_isolation_checks": [
+      "Check ambient server room rack intake temperature (must not exceed 25 C).",
+      "Inspect front and rear chassis air grilles for physical dust accumulation.",
+      "Run 'show system environment thermal' to compare sensor readings across zones 1 through 4.",
+      "Verify all 4 counter-rotating pulse-width modulated (PWM) fans report RPM above 6000."
+    ],
+    "applicable_firmware": "All Versions"
+  },
+  "ERR-ARPX-402": {
+    "code": "ERR-ARPX-402",
+    "model": "Apex Router Pro-X",
+    "subsystem": "Persistent Storage & Firmware NVRAM",
+    "symptom": "Non-Volatile Memory (NVRAM) Checksum Mismatch / Hardware Integrity Fault",
+    "description": "System integrity check failed on secondary flash partition during boot verification. Potential flash memory corruption.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": true,
+    "technician_authorization_boundary": "MANDATORY HALT: Physical flash module replacement or JTAG recovery requires Authorized Field Technician with ESD grounding kit and signed cryptographic recovery token.",
+    "initial_isolation_checks": [
+      "Record system serial number, active boot partition, and hardware revision.",
+      "Export crash dump log via 'system dump export tftp://<server>/dump.bin'.",
+      "Do NOT power cycle or restart chassis to prevent persistent boot-loop state.",
+      "Halt diagnostic procedure immediately and request emergency hardware technician dispatch."
+    ],
+    "applicable_firmware": "All Versions"
+  },
+  "ERR-ARPX-505": {
+    "code": "ERR-ARPX-505",
+    "model": "Apex Router Pro-X",
+    "subsystem": "Power Distribution & Redundant PSU",
+    "symptom": "Dual Redundant Power Supply (PSU-2) Phase Loss or Voltage Sag",
+    "description": "Secondary power module input voltage measured below 90 VAC or 0 VDC. Redundant power topology compromised.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "Operator can inspect AC cord seating and PDU breaker state. Hot-swap replacement of PSU module requires Authorized Field Technician if input source breaker cannot be isolated.",
+    "initial_isolation_checks": [
+      "Verify C14 power cable is fully latched into PSU-2 rear receptacle.",
+      "Inspect rack PDU branch circuit breaker feeding PSU-2 feed line B.",
+      "Verify front LED panel status: PSU-1 (Solid Green), PSU-2 (Flashing Amber or Off).",
+      "Execute 'show system power' to view input voltage, output wattage, and thermal readings on PSU-2."
+    ],
+    "applicable_firmware": ">=v3.8.0"
+  },
+  "ERR-CS4K-108": {
+    "code": "ERR-CS4K-108",
+    "model": "CoreSwitch 4000",
+    "subsystem": "Packet Switching Fabric & Buffer Engine",
+    "symptom": "ASIC Packet Buffer Allocation Exhaustion / Ingress Drops",
+    "description": "Shared ingress packet buffer pool occupancy reached 99.2%. Tail drops observed on priority queues 4 through 7.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "Software QoS tuning and microburst profile adjustment allowed for network operators. Buffer memory hardware testing requires vendor escalation.",
+    "initial_isolation_checks": [
+      "Inspect queue drop counters via 'show interfaces priority-queue counters'.",
+      "Check for microburst traffic patterns on 100GbE uplink trunks.",
+      "Verify Explicit Congestion Notification (ECN) and Priority Flow Control (PFC) parameters.",
+      "Enable dynamic buffer profile: 'config qos buffer-profile dynamic-auto'."
+    ],
+    "applicable_firmware": ">=v5.1.0"
+  },
+  "ERR-CS4K-215": {
+    "code": "ERR-CS4K-215",
+    "model": "CoreSwitch 4000",
+    "subsystem": "Chassis Interconnect & High-Speed Backplane",
+    "symptom": "Backplane Fabric Bus CRC Error Rate Exceeds 10^-5 Threshold",
+    "description": "High serial bit error rates detected across SerDes lanes connecting Line Card 2 to Central Crossbar Switch Module.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": true,
+    "technician_authorization_boundary": "MANDATORY HALT: Physical line card reseat, alignment pin inspection, and backplane trace diagnostics require Authorized Field Technician with calibrated torque screwdriver and ESD protection.",
+    "initial_isolation_checks": [
+      "Execute 'show fabric backplane errors linecard 2' to capture lane-by-lane bit error rates.",
+      "Isolate Line Card 2 traffic by shifting routing metrics to redundant card 1.",
+      "Do NOT unlatch or reseat line card during active production traffic.",
+      "Generate backplane diagnostic package and dispatch Tier-3 hardware field engineer."
+    ],
+    "applicable_firmware": "All Versions"
+  },
+  "ERR-CS4K-330": {
+    "code": "ERR-CS4K-330",
+    "model": "CoreSwitch 4000",
+    "subsystem": "Power over Ethernet (PoE+) Controller",
+    "symptom": "PoE+ Power Budget Overdraft on Line Card 3 (Exceeds 740W Limit)",
+    "description": "Total requested PoE power on 48-port Line Card 3 exceeds internal transformer thermal rating. Ports entering safety cutoff.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "Site administrator can re-assign port priorities (Critical, High, Low) and disable unused PoE ports via software.",
+    "initial_isolation_checks": [
+      "Execute 'show power inline linecard 3' to audit consumption per port.",
+      "Identify Class 4 and Class 6 high-draw PoE endpoints (PTZ cameras, high-power APs).",
+      "Reconfigure non-critical ports to low priority to prevent line card global cutoff.",
+      "Audit building cabling runs to verify resistance losses do not exceed 12.5 ohms per loop."
+    ],
+    "applicable_firmware": ">=v5.0.0"
+  },
+  "ERR-CS4K-412": {
+    "code": "ERR-CS4K-412",
+    "model": "CoreSwitch 4000",
+    "subsystem": "Chassis Cooling & Modular Fan Tray",
+    "symptom": "Fan Tray 2 Tachometer Signal Loss / Rotor Lock Alert",
+    "description": "Hall effect sensor on Fan Tray 2 reports 0 RPM for Fan Units 3 and 4. Chassis operates on N+1 emergency cooling profile.",
+    "severity": "HIGH",
+    "requires_authorized_technician": true,
+    "technician_authorization_boundary": "MANDATORY HALT: Modular fan tray extraction and replacement while chassis is energized requires Authorized Field Technician to adhere to hot-swap safety clearance limits (maximum 180 seconds extraction window).",
+    "initial_isolation_checks": [
+      "Check chassis environment telemetry via 'show environment fan'.",
+      "Inspect Fan Tray 2 physical status LED on rear chassis panel (Red indicates rotor lock).",
+      "Verify adjacent fan trays 1 and 3 are compensating at 100% full speed.",
+      "Prepare hot-swap replacement fan tray (FRU-CS4K-FAN-R) and halt for certified technician."
+    ],
+    "applicable_firmware": "All Versions"
+  },
+  "ERR-CS4K-520": {
+    "code": "ERR-CS4K-520",
+    "model": "CoreSwitch 4000",
+    "subsystem": "Hardware Security Module (HSM) & Trust Boundary",
+    "symptom": "Cryptographic HSM Tamper Alert / Secure Enclave Locked",
+    "description": "Physical tamper detection circuit triggered on motherboard crypto coprocessor. Encryption keys zeroized as defensive measure.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": true,
+    "technician_authorization_boundary": "MANDATORY HALT: Physical inspection, cryptoprocessor re-commissioning, and key vault re-provisioning require Authorized Security Field Engineer with dual-custody authorization keys.",
+    "initial_isolation_checks": [
+      "Document physical chassis seals on top cover and rack security brackets.",
+      "Review management console audit log for unexpected chassis intrusion sensor triggers.",
+      "Do NOT attempt firmware overwrite or hardware reset.",
+      "Immediately escalate to Enterprise Security Operations and Certified Hardware Engineering."
+    ],
+    "applicable_firmware": "All Versions"
+  }
+}
