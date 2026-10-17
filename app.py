@@ -58,6 +58,61 @@ INDUSTRIAL_CSS = """
         margin: 0 !important;
     }
 
+    /* Workflow Progression Bar */
+    .workflow-container {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        font-family: "Consolas", monospace;
+        font-size: 0.72rem;
+    }
+    .workflow-step {
+        flex: 1;
+        background-color: #111827;
+        border: 1px solid #1F2937;
+        padding: 8px 10px;
+        border-radius: 2px;
+        text-align: center;
+        color: #9CA3AF;
+        letter-spacing: 0.04em;
+    }
+    .workflow-step.step-active {
+        border-color: #06B6D4 !important;
+        background-color: #083344 !important;
+        color: #38BDF8 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 0 8px rgba(6, 182, 212, 0.25) !important;
+    }
+    .workflow-step.step-success {
+        border-color: #059669 !important;
+        background-color: #064E3B !important;
+        color: #10B981 !important;
+        font-weight: 700 !important;
+    }
+    .workflow-step.step-halt {
+        border-color: #DC2626 !important;
+        background-color: #450A0A !important;
+        color: #EF4444 !important;
+        font-weight: 700 !important;
+    }
+
+    /* Operator Guide Box */
+    .guide-box {
+        background-color: #050811;
+        border: 1px solid #1E293B;
+        border-left: 3px solid #06B6D4;
+        border-radius: 2px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+        font-family: "Consolas", monospace;
+        font-size: 0.74rem;
+        color: #94A3B8;
+        line-height: 1.5;
+    }
+    .guide-box strong {
+        color: #38BDF8;
+    }
+
     /* Panel Card Container */
     .op-panel {
         background-color: #111827;
@@ -560,9 +615,9 @@ with head_col1:
 
 with head_col2:
     badge_html = (
-        '<span class="badge-subsystem badge-emerald">[MAAS CLOUD GATEWAY: ONLINE]</span>'
+        '<span class="badge-subsystem badge-emerald" title="Connected to remote cloud model endpoint">[MAAS CLOUD GATEWAY: ONLINE]</span>'
         if is_maas_online else
-        '<span class="badge-subsystem badge-cyan">[AUTONOMOUS AIRGAPPED ENGINE: ACTIVE]</span>'
+        '<span class="badge-subsystem badge-cyan" title="Operating with zero-dependency deterministic local fallback engine">[AUTONOMOUS AIRGAPPED ENGINE: ACTIVE]</span>'
     )
     asset_tag = "ARPX-800" if "Apex" in st.session_state.model_id else "CS4K-48T"
     st.markdown(
@@ -576,7 +631,7 @@ with head_col2:
     )
 
 with head_col3:
-    if st.button("RESET SESSION", use_container_width=True):
+    if st.button("RESET SESSION", use_container_width=True, help="Reset diagnostic state: Clears all timeline records, resets confidence to 0%, and restarts with a new session ID."):
         new_sess = f"SESS-{uuid.uuid4().hex[:8].upper()}"
         st.session_state.session_id = new_sess
         st.session_state.chat_history = []
@@ -586,7 +641,64 @@ with head_col3:
         st.session_state.active_step_data = None
         st.rerun()
 
-st.markdown("<hr style='border: none; border-top: 1px solid #1F2937; margin: 4px 0 14px 0;'/>", unsafe_allow_html=True)
+st.markdown("<hr style='border: none; border-top: 1px solid #1F2937; margin: 4px 0 10px 0;'/>", unsafe_allow_html=True)
+
+
+# ============================================================================
+# Dynamic 3-Step Operator Workflow Progression Bar
+# ============================================================================
+
+is_started = len(st.session_state.chat_history) > 0
+is_resolved = st.session_state.diagnostic_status == "RESOLVED"
+is_halted = st.session_state.diagnostic_status in ("MANDATORY_HALT_TECHNICIAN_REQUIRED", "ESCALATED")
+
+# Dynamic step highlighting
+step1_class = "step-active" if not is_started else "step-success"
+step2_class = "step-active" if (is_started and not is_resolved and not is_halted) else ("step-success" if (is_resolved or is_halted) else "")
+
+if is_resolved:
+    step3_class = "step-success"
+    step3_title = "STEP 3: RESOLUTION CONFIRMED (98%)"
+elif is_halted:
+    step3_class = "step-halt"
+    step3_title = "STEP 3: SAFETY INTERLOCK HALT & ESCALATION"
+elif is_started:
+    step3_class = "step-active"
+    step3_title = "STEP 3: RECORD OBSERVATIONS & AUDIT"
+else:
+    step3_class = ""
+    step3_title = "STEP 3: OBSERVE & RESOLVE OR ESCALATE"
+
+st.markdown(
+    f"""
+    <div class="workflow-container">
+        <div class="workflow-step {step1_class}" title="Step 1: Configure device identity (Model ID, Firmware Version, Fault Code)">
+            <strong>[STEP 1]</strong> CONFIGURE ASSET & FAULT CODE
+        </div>
+        <div class="workflow-step {step2_class}" title="Step 2: Initialize procedural plan and review approved OEM diagnostic directive">
+            <strong>[STEP 2]</strong> EXECUTE APPROVED ISOLATION DIRECTIVE
+        </div>
+        <div class="workflow-step {step3_class}" title="Step 3: Submit empirical observation to update timeline and achieve 98% resolution or safety dispatch">
+            <strong>[STEP 3]</strong> {step3_title}
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Collapsible Interactive Guide with Architecture Tooltips
+with st.expander("[?] OPERATOR GUIDE & ARCHITECTURE TOOLTIPS (HOW THIS CONSOLE WORKS)", expanded=False):
+    st.markdown(
+        """
+        <div class="guide-box">
+            <div><strong>STAGE 1 - PARAMETER GATING:</strong> The Symptom Clarifier Agent requires verified Model ID, Firmware, and Environment. If any parameter is omitted, procedural execution halts to prevent cross-model mistakes.</div>
+            <div style="margin-top: 6px;"><strong>STAGE 2 - COMPATIBILITY GATE:</strong> Mathematical metadata filtering strictly isolates manuals. Apex Router Pro-X queries never retrieve CoreSwitch 4000 procedures.</div>
+            <div style="margin-top: 6px;"><strong>STAGE 3 - SAFE-STEP SEQUENCER:</strong> Directives progress from least disruptive (software queries) to physical cleaning. If an invasive procedure is reached, the Crimson Safety Interlock halts execution to prevent electrical or laser hazards.</div>
+            <div style="margin-top: 6px;"><strong>STAGE 4 - EVIDENCE TIMELINE & REVIEW:</strong> Every observation is recorded in an immutable audit trail. The digital meter calculates quantitative Resolution Confidence (0% to 100%).</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # ============================================================================
@@ -599,17 +711,20 @@ with st.expander("HARDWARE ASSET SPECIFICATIONS & DIAGNOSTIC FAULT CODES", expan
         st.session_state.model_id = st.selectbox(
             "Hardware Asset Model",
             options=["Apex Router Pro-X", "CoreSwitch 4000"],
-            index=0 if "Apex" in st.session_state.model_id else 1
+            index=0 if "Apex" in st.session_state.model_id else 1,
+            help="Select the exact target network gateway. The Compatibility Gate ensures only manuals for this exact model are queried."
         )
     with t_col2:
         st.session_state.firmware_version = st.text_input(
             "Firmware Revision",
-            value=st.session_state.firmware_version
+            value=st.session_state.firmware_version,
+            help="Active firmware build. Required by the Symptom Clarifier to validate semantic version compatibility."
         )
     with t_col3:
         st.session_state.operating_environment = st.text_input(
             "Operating Environment Profile",
-            value=st.session_state.operating_environment
+            value=st.session_state.operating_environment,
+            help="Physical operating deployment context (e.g. Cold Aisle, Edge POP). Used to set baseline thermal and power thresholds."
         )
     with t_col4:
         try:
@@ -621,7 +736,8 @@ with st.expander("HARDWARE ASSET SPECIFICATIONS & DIAGNOSTIC FAULT CODES", expan
         st.session_state.error_code = st.selectbox(
             "Diagnostic Fault Code (Target)",
             options=code_choices,
-            index=0 if st.session_state.error_code not in code_choices else code_choices.index(st.session_state.error_code)
+            index=0 if st.session_state.error_code not in code_choices else code_choices.index(st.session_state.error_code),
+            help="Select the diagnostic fault code registered on hardware management registers (e.g. OPT-001 for optical signal loss)."
         )
 
 
@@ -664,7 +780,7 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             """,
             unsafe_allow_html=True
         )
-        if st.button("INITIALIZE ASSET ISOLATION SEQUENCE", use_container_width=True):
+        if st.button("INITIALIZE ASSET ISOLATION SEQUENCE", use_container_width=True, help="Loads authorized OEM manuals, pre-filters compatibility, and initiates Diagnostic Step 01."):
             init_msg = (
                 f"Model: {st.session_state.model_id}, "
                 f"Firmware: {st.session_state.firmware_version}, "
@@ -720,14 +836,17 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
                         DIAGNOSTIC STEP {step_num:02d} / {total_steps:02d}
                     </span>
                     <div>
-                        <span class="badge-subsystem badge-cyan">{subsystem_tag}</span>
-                        <span class="badge-subsystem {disrupt_badge}">{disrupt_text}</span>
+                        <span class="badge-subsystem badge-cyan" title="Target hardware subsystem classification">{subsystem_tag}</span>
+                        <span class="badge-subsystem {disrupt_badge}" title="Operational disruption risk rating">{disrupt_text}</span>
                     </div>
                 </div>
                 <div class="directive-title">APPROVED DIAGNOSTIC DIRECTIVE</div>
                 <div class="directive-text">{active_step.get('action')}</div>
                 <div class="citation-box">
                     Source: {citation_ref} | Authority: OEM Certified ESM-NET-2026-V4
+                </div>
+                <div style="font-size: 0.7rem; color: #38BDF8; font-family: 'Consolas', monospace; margin-top: 8px; border-top: 1px solid #1E293B; padding-top: 6px;">
+                    [OPERATOR INSTRUCTION] Execute the command above on your management terminal. Then type the observed outcome in the console below (or click a test preset) and click 'COMMIT OBSERVATION'.
                 </div>
             </div>
             """,
@@ -775,9 +894,13 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
         operator_input = st.text_area(
             "OPERATOR OBSERVATION CONSOLE",
             placeholder="Operator physical observation or CLI telemetry output...",
-            height=78
+            height=78,
+            help="Type your CLI telemetry readout (e.g., optical power, drop counters) or physical observation here. The Resolution Review Agent evaluates this against expected baselines."
         )
-        commit_btn = st.form_submit_button("[COMMIT OBSERVATION & ADVANCE]")
+        commit_btn = st.form_submit_button(
+            "[COMMIT OBSERVATION & ADVANCE]",
+            help="Submits your observation to the Resolution Review Agent. Computes confidence and advances to the next authorized step."
+        )
 
         if commit_btn and operator_input.strip():
             # Append operator observation
@@ -802,11 +925,11 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             st.rerun()
 
     # Preset Telemetry Buttons for One-Click Verification
-    st.markdown("<div style='font-size: 0.7rem; color: #9CA3AF; font-family: \"Consolas\", monospace; text-transform: uppercase; margin-top: 6px;'>ONE-CLICK TEST TELEMETRY PRESETS:</div>", unsafe_allow_html=True)
+    st.markdown("<div style='font-size: 0.7rem; color: #9CA3AF; font-family: \"Consolas\", monospace; text-transform: uppercase; margin-top: 6px;'>ONE-CLICK TEST TELEMETRY PRESETS (HOVER FOR DETAILS):</div>", unsafe_allow_html=True)
     b_col1, b_col2, b_col3 = st.columns(3)
 
     with b_col1:
-        if st.button("PRESET 1: SFP RX Power (-28.2 dBm)", use_container_width=True):
+        if st.button("PRESET 1: SFP RX Power (-28.2 dBm)", use_container_width=True, help="Simulates an abnormal optical power reading below the -24.0 dBm threshold. Logs VERIFIED_ABNORMAL in the timeline and advances to cleaning."):
             p1_text = "CLI telemetry 'show interfaces wan0 optical-diagnostics' reports SFP RX Power sub-threshold (-28.2 dBm), LOS asserted abnormal"
             st.session_state.chat_history.append({"role": "OPERATOR", "content": p1_text, "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
             resp = query_diagnostic_engine(p1_text)
@@ -818,7 +941,7 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             st.rerun()
 
     with b_col2:
-        if st.button("PRESET 2: Cleaned End-Face (-11.5 dBm)", use_container_width=True):
+        if st.button("PRESET 2: Cleaned End-Face (-11.5 dBm)", use_container_width=True, help="Simulates successful ferrule cleaning, restoring normal power (-11.5 dBm) and triggering 98% FAULT RESOLVED."):
             p2_text = "Optical fiber end-face cleaned; power restored to -11.5 dBm, nominal operational status verified"
             st.session_state.chat_history.append({"role": "OPERATOR", "content": p2_text, "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
             resp = query_diagnostic_engine(p2_text)
@@ -830,7 +953,7 @@ Initiate procedural isolation check to sequence non-disruptive telemetry routine
             st.rerun()
 
     with b_col3:
-        if st.button("PRESET 3: PSU High Voltage Alert", use_container_width=True):
+        if st.button("PRESET 3: PSU High Voltage Alert", use_container_width=True, help="Simulates an internal power supply fault to test the deterministic Crimson Safety Interlock halt."):
             p3_text = "Internal PSU capacitor bank humming; high voltage alert, breaker tripped abnormal"
             st.session_state.chat_history.append({"role": "OPERATOR", "content": p3_text, "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
             resp = query_diagnostic_engine(p3_text)
@@ -873,7 +996,7 @@ with col_right:
 
     st.markdown(
         f"""
-        <div class="meter-container">
+        <div class="meter-container" title="Quantitative Confidence calculated dynamically: 15-75% during isolation | 98% upon confirmed fault clearance | 94% on mandatory safety dispatch">
             <div class="meter-readout" style="color: {meter_color};">{conf_val}%</div>
             <div class="meter-subtext">
                 QUANTITATIVE RESOLUTION CONFIDENCE // <span class="badge-subsystem {badge_style}">{meter_status_str}</span>
@@ -886,7 +1009,7 @@ with col_right:
     # 2. Compatibility Gate Status Table
     st.markdown(
         f"""
-        <table class="hardware-lock-table">
+        <table class="hardware-lock-table" title="Hardware Compatibility Gate enforces strict metadata pre-filtering on vector queries">
             <tr>
                 <td class="label-cell">Target Model Gate</td>
                 <td class="value-cell" style="color: #10B981;">MATCHED ({st.session_state.model_id[:16]})</td>
@@ -955,7 +1078,7 @@ with col_right:
 
     # Ensure escalation record exists or can be generated
     if not st.session_state.escalation_record:
-        if st.button("PREPARE FORMAL INCIDENT RECORD", use_container_width=True):
+        if st.button("PREPARE FORMAL INCIDENT RECORD", use_container_width=True, help="Compiles the immutable evidence audit trail, required spare parts, and safety directives into a formal Tier-3 incident package."):
             pkg = ResolutionReviewAgent.generate_escalation_package(
                 current_session,
                 reason="Manual operator audit export requested from industrial console."
@@ -997,7 +1120,8 @@ with col_right:
                 data=json_payload,
                 file_name=f"{esc_data.get('incident_id', 'INC')}_ESCALATION_RECORD.json",
                 mime="application/json",
-                use_container_width=True
+                use_container_width=True,
+                help="Exports the machine-readable escalation JSON payload for enterprise ITSM ticketing systems (ServiceNow/Jira)."
             )
         with dl_col2:
             st.download_button(
@@ -1005,5 +1129,6 @@ with col_right:
                 data=md_payload,
                 file_name=f"{esc_data.get('incident_id', 'INC')}_AUDIT_REPORT.md",
                 mime="text/markdown",
-                use_container_width=True
+                use_container_width=True,
+                help="Exports a formatted human-readable incident audit log in Markdown format."
             )
