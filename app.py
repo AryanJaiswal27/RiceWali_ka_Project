@@ -208,38 +208,204 @@ INDUSTRIAL_CSS = """
         font-weight: 700;
     }
 
-    /* Inputs & Form Controls */
+    /* Form Inputs & BaseWeb Containers */
+    div[data-baseweb="input"],
+    div[data-baseweb="textarea"],
+    div[data-baseweb="select"] > div,
     input, textarea, select {
         background-color: #050811 !important;
+        background: #050811 !important;
         border: 1px solid #1F2937 !important;
         color: #F3F4F6 !important;
         font-family: "Consolas", monospace !important;
         font-size: 0.82rem !important;
         border-radius: 2px !important;
     }
+    div[data-baseweb="input"]:focus-within,
+    div[data-baseweb="textarea"]:focus-within,
+    div[data-baseweb="select"] > div:focus-within,
     input:focus, textarea:focus, select:focus {
         border-color: #06B6D4 !important;
-        box-shadow: none !important;
+        box-shadow: 0 0 0 1px #06B6D4 !important;
+    }
+    textarea::placeholder, input::placeholder {
+        color: #64748B !important;
     }
 
-    /* Sharp Industrial Action Buttons */
-    div.stButton > button {
+    /* Select Dropdown Menu & Popovers */
+    div[data-baseweb="popover"],
+    div[data-baseweb="menu"],
+    ul[data-baseweb="menu"] {
         background-color: #111827 !important;
-        color: #F9FAFB !important;
-        border: 1px solid #374151 !important;
+        border: 1px solid #334155 !important;
+        color: #F3F4F6 !important;
+    }
+    li[data-baseweb="menu-item"] {
+        background-color: #111827 !important;
+        color: #E5E7EB !important;
+        font-family: "Consolas", monospace !important;
+        font-size: 0.8rem !important;
+    }
+    li[data-baseweb="menu-item"]:hover,
+    li[data-baseweb="menu-item"][aria-selected="true"] {
+        background-color: #1F2937 !important;
+        color: #06B6D4 !important;
+    }
+
+    /* Expander Container & Header */
+    div[data-testid="stExpander"] {
+        background-color: #111827 !important;
+        border: 1px solid #1F2937 !important;
         border-radius: 2px !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-        font-size: 0.78rem !important;
+        margin-bottom: 12px !important;
+    }
+    div[data-testid="stExpander"] summary {
+        background-color: #111827 !important;
+        color: #9CA3AF !important;
+        font-family: "Consolas", monospace !important;
+        font-size: 0.76rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+    }
+    div[data-testid="stExpander"] summary:hover {
+        color: #06B6D4 !important;
+    }
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        background-color: #0B0F19 !important;
+        border-top: 1px solid #1F2937 !important;
+        padding: 12px !important;
+    }
+
+    /* =========================================================================
+       UNIVERSAL HIGH-CONTRAST INDUSTRIAL BUTTON STYLING
+       Eliminates white-on-white button rendering across all Streamlit variants
+       ========================================================================= */
+    button,
+    button[kind="secondary"],
+    button[kind="primary"],
+    button[data-testid="baseButton-secondary"],
+    button[data-testid="baseButton-primary"],
+    div.stButton > button,
+    div[data-testid="stFormSubmitButton"] > button,
+    div[data-testid="stDownloadButton"] > button {
+        background-color: #161E2E !important;
+        background: #161E2E !important;
+        color: #38BDF8 !important;
+        border: 1px solid #334155 !important;
+        border-radius: 2px !important;
+        font-family: "Consolas", "Monaco", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-size: 0.74rem !important;
         font-weight: 700 !important;
         letter-spacing: 0.04em !important;
         text-transform: uppercase !important;
-        padding: 7px 14px !important;
-        transition: none !important;
+        padding: 8px 12px !important;
+        box-shadow: none !important;
+        outline: none !important;
+        height: auto !important;
+        min-height: 38px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        text-align: center !important;
+        transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease !important;
     }
-    div.stButton > button:hover {
-        background-color: #1F2937 !important;
+
+    /* Force all text elements inside buttons to inherit high-contrast colors */
+    button p,
+    button span,
+    button div,
+    button label,
+    div.stButton > button p,
+    div.stButton > button span,
+    div[data-testid="stFormSubmitButton"] > button p,
+    div[data-testid="stFormSubmitButton"] > button span,
+    div[data-testid="stDownloadButton"] > button p,
+    div[data-testid="stDownloadButton"] > button span {
+        color: #38BDF8 !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        white-space: normal !important;
+    }
+
+    /* Button Hover States */
+    button:hover,
+    div.stButton > button:hover,
+    div[data-testid="stFormSubmitButton"] > button:hover,
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: #1E293B !important;
+        background: #1E293B !important;
         border-color: #06B6D4 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 8px rgba(6, 182, 212, 0.3) !important;
+    }
+    button:hover p,
+    button:hover span,
+    button:hover div {
+        color: #FFFFFF !important;
+    }
+
+    /* Button Active & Focus States */
+    button:active,
+    button:focus,
+    button:focus-visible,
+    div.stButton > button:active,
+    div.stButton > button:focus,
+    div[data-testid="stFormSubmitButton"] > button:active,
+    div[data-testid="stFormSubmitButton"] > button:focus {
+        background-color: #0F172A !important;
+        background: #0F172A !important;
+        border-color: #38BDF8 !important;
+        color: #38BDF8 !important;
+        box-shadow: 0 0 0 1px #06B6D4 !important;
+        outline: none !important;
+    }
+    button:active p, button:focus p,
+    button:active span, button:focus span {
+        color: #38BDF8 !important;
+    }
+
+    /* High-Impact Primary Submit Button [COMMIT OBSERVATION & ADVANCE] */
+    div[data-testid="stFormSubmitButton"] > button {
+        background-color: #0E7490 !important;
+        background: #0E7490 !important;
+        border: 1px solid #06B6D4 !important;
+        color: #FFFFFF !important;
+        min-height: 42px !important;
+    }
+    div[data-testid="stFormSubmitButton"] > button p,
+    div[data-testid="stFormSubmitButton"] > button span {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+    }
+    div[data-testid="stFormSubmitButton"] > button:hover {
+        background-color: #0891B2 !important;
+        background: #0891B2 !important;
+        border-color: #38BDF8 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 0 12px rgba(6, 182, 212, 0.5) !important;
+    }
+
+    /* Formal Download Buttons */
+    div[data-testid="stDownloadButton"] > button {
+        background-color: #0B1120 !important;
+        border: 1px solid #1E293B !important;
         color: #06B6D4 !important;
+    }
+    div[data-testid="stDownloadButton"] > button p {
+        color: #06B6D4 !important;
+    }
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: #111827 !important;
+        border-color: #06B6D4 !important;
+        color: #38BDF8 !important;
+    }
+    div[data-testid="stDownloadButton"] > button:hover p {
+        color: #38BDF8 !important;
     }
 </style>
 """
