@@ -647,6 +647,7 @@ class ResolutionReviewAgent:
             session.resolution_confidence = 94
             session.diagnostic_status = "MANDATORY_HALT_TECHNICIAN_REQUIRED"
             escalation_pkg = ResolutionReviewAgent.generate_escalation_package(session, reason="Authorized Technician Interlock Enforced")
+            session.escalation_record = escalation_pkg
             return {
                 "type": "MANDATORY_HALT",
                 "confidence": session.resolution_confidence,
@@ -812,7 +813,7 @@ class DiagnosticCoordinator:
                 "message": final_message,
                 "confidence": eval_result["confidence"],
                 "timeline": [t.model_dump() for t in session.timeline],
-                "escalation_record": session.escalation_record
+                "escalation_record": eval_result.get("escalation_package") or session.escalation_record
             }
 
         # Step 2: Initialize Planning Pipeline
