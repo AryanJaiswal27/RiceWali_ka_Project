@@ -13,13 +13,15 @@ from src.agents import (
     get_or_create_session,
     SESSION_STORAGE,
     SessionState,
-    EvidenceStep
+    EvidenceStep,
+    SUPPORTED_MODELS,
+    normalize_model_id
 )
 
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="Enterprise Network Gateway Diagnostic Assistant - Corporate IT Field Operations Standard"
+    description="AI Product Manual Troubleshooting Assistant - Appliance Field Service Operations"
 )
 
 # Enable CORS for industrial dashboards and local tools
@@ -38,15 +40,16 @@ app.add_middleware(
 
 class DiagnoseRequest(BaseModel):
     session_id: Optional[str] = Field(default=None, description="Diagnostic session identifier. Auto-generated if omitted.")
-    message: str = Field(..., description="Operator observation, symptom statement, or telemetry snippet.")
-    model_id: Optional[str] = Field(default=None, description="Hardware model identifier (e.g. Apex Router Pro-X)")
-    firmware_version: Optional[str] = Field(default=None, description="Firmware version (e.g. v4.2.0)")
-    operating_environment: Optional[str] = Field(default=None, description="Operating environment (e.g. Datacenter Rack 4)")
-    error_code: Optional[str] = Field(default=None, description="Hardware error code (e.g. ERR-ARPX-101)")
+    message: str = Field(..., description="Operator observation, symptom statement, or error code.")
+    model_id: Optional[str] = Field(default=None, description="Appliance model identifier (e.g. BOSCH_SHEM78, WHIRLPOOL_WASHER_ALPHA, LG_REFRIG_LFXS, BREVILLE_BES920)")
+    firmware_version: Optional[str] = Field(default=None, description="Board revision or firmware version (e.g. Rev C, Rev B3)")
+    operating_environment: Optional[str] = Field(default=None, description="Operating environment (e.g. Residential Kitchen, Commercial Cafe)")
+    error_code: Optional[str] = Field(default=None, description="Appliance error code (e.g. E15, F06 E01, BLNK-5, Er01)")
 
 
 class DiagnoseResponse(BaseModel):
     session_id: str
+    model_id: Optional[str] = None
     status: str
     response_type: str
     message: str
@@ -77,6 +80,11 @@ class HealthResponse(BaseModel):
     supported_hardware: list[str]
 
 
+class SupportedModelsResponse(BaseModel):
+    total: int
+    models: list[dict[str, Any]]
+
+
 # ============================================================================
 # API Endpoints
 # ============================================================================
@@ -84,7 +92,7 @@ class HealthResponse(BaseModel):
 @app.get("/health", response_model=HealthResponse, tags=["System Health"])
 def health_check() -> HealthResponse:
     """
-    Standard enterprise health and readiness check.
+    Operational readiness ping.
     """
     return HealthResponse(
         status="OPERATIONAL",
@@ -95,10 +103,33 @@ def health_check() -> HealthResponse:
     )
 
 
+@app.get("/api/models", response_model=SupportedModelsResponse, tags=["Appliance Platforms"])
+def get_supported_models() -> SupportedModelsResponse:
+    """
+    Returns list of the 4 supported appliance platforms.
+    """
+    model_list = [
+        {
+            "model_id": k,
+            "display_name": v,
+            "manual_reference": f"# [MANUAL: {k}]",
+            "supported_error_codes": [
+                code for code, data in _load_error_codes_db().items()
+                if data.get("model_id") == k
+            ]
+        }
+        for k, v in SUPPORTED_MODELS.items()
+    ]
+    return SupportedModelsResponse(
+        total=len(model_list),
+        models=model_list
+    )
+
+
 @app.post("/api/diagnose", response_model=DiagnoseResponse, tags=["Diagnostics"])
 def diagnose(payload: DiagnoseRequest) -> DiagnoseResponse:
     """
-    Main conversational and procedural diagnostic loop.
+    Primary session diagnostic progression loop.
     Manages session state, agent reasoning, safe-step planning, and evidence logging.
     """
     session_id = payload.session_id or f"sess-{uuid.uuid4().hex[:8]}"
@@ -106,7 +137,9 @@ def diagnose(payload: DiagnoseRequest) -> DiagnoseResponse:
 
     # Pre-populate session state if explicit parameters are provided in request
     if payload.model_id:
-        session.model_id = payload.model_id
+        norm_m = normalize_model_id(payload.model_id)
+        if norm_m:
+            session.model_id = norm_m
     if payload.firmware_version:
         session.firmware_version = payload.firmware_version
     if payload.operating_environment:
@@ -121,6 +154,7 @@ def diagnose(payload: DiagnoseRequest) -> DiagnoseResponse:
         )
         return DiagnoseResponse(
             session_id=result["session_id"],
+            model_id=result.get("model_id"),
             status=result["status"],
             response_type=result["response_type"],
             message=result["message"],
@@ -138,7 +172,7 @@ def diagnose(payload: DiagnoseRequest) -> DiagnoseResponse:
 @app.get("/api/timeline/{session_id}", response_model=TimelineResponse, tags=["Telemetry & Audit"])
 def get_timeline(session_id: str) -> TimelineResponse:
     """
-    Returns the complete chronological evidence audit log for a given diagnostic session.
+    Retrieves chronological evidence history for a given diagnostic session.
     """
     if session_id not in SESSION_STORAGE:
         raise HTTPException(
@@ -159,7 +193,7 @@ def get_timeline(session_id: str) -> TimelineResponse:
 @app.post("/api/escalate/{session_id}", response_model=EscalateResponse, tags=["Escalations"])
 def escalate_session(session_id: str) -> EscalateResponse:
     """
-    Forces generation and compilation of the formal incident escalation record.
+    Compiles formal escalation JSON payload for field technicians.
     """
     if session_id not in SESSION_STORAGE:
         raise HTTPException(
@@ -184,12 +218,13 @@ def escalate_session(session_id: str) -> EscalateResponse:
 @app.get("/api/codes", tags=["Diagnostics Data"])
 def list_codes(model: Optional[str] = None) -> dict[str, Any]:
     """
-    Returns structured list of available error codes in the corporate database.
+    Returns structured list of available error codes in the appliance database.
     """
     try:
         db = _load_error_codes_db()
         if model:
-            filtered = {k: v for k, v in db.items() if model.lower() in v.get("model", "").lower()}
+            norm_m = normalize_model_id(model)
+            filtered = {k: v for k, v in db.items() if (norm_m and v.get("model_id") == norm_m) or (model.lower() in v.get("model_id", "").lower())}
             return {"total": len(filtered), "codes": filtered}
         return {"total": len(db), "codes": db}
     except Exception as e:

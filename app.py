@@ -1,615 +1,681 @@
 import json
 import uuid
 import re
-import textwrap
 from datetime import datetime, timezone
 from typing import Any, Optional
 import httpx
 import streamlit as st
 
 from src.config import settings
-from src.tools import _load_error_codes_db
+from src.tools import _load_error_codes_db, lookup_error_code
 from src.agents import (
     DiagnosticCoordinator,
     SafeStepPlannerAgent,
     ResolutionReviewAgent,
     get_or_create_session,
     SESSION_STORAGE,
-    SessionState
+    SessionState,
+    SUPPORTED_MODELS,
+    normalize_model_id
 )
 
 # ============================================================================
-# Page Configuration & Modern Industrial Operations Design System
+# Page Configuration & Light Warm Ivory/Cream Human-Centric Design System
 # ============================================================================
 
 st.set_page_config(
-    page_title="Industrial Asset Diagnostic Console // ARPX-Core Series",
+    page_title="Diagnostic Service Assistant",
     page_icon=None,
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Modern, High-Density Industrial Dark Ops Design System
-MODERN_INDUSTRIAL_CSS = """
+# Comprehensive Human-Centric Clean Light Theme CSS
+REVAMPED_LIGHT_CSS = """
 <style>
-    /* Global Base Canvas */
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
-    html, body, [data-testid="stAppViewContainer"] {
-        background-color: #070B14 !important;
-        color: #E2E8F0 !important;
+    /* Global Canvas */
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
+        background-color: #FAF7F2 !important;
+        background: #FAF7F2 !important;
+        color: #1F2937 !important;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     }
-    
+
     [data-testid="stHeader"] {
-        background-color: rgba(7, 11, 20, 0.85) !important;
-        backdrop-filter: blur(12px) !important;
-        border-bottom: 1px solid #1E293B !important;
+        background-color: rgba(250, 247, 242, 0.92) !important;
+        border-bottom: 1px solid #E5E7EB !important;
+        backdrop-filter: blur(8px) !important;
     }
 
     [data-testid="stSidebar"] {
-        background-color: #0D1526 !important;
-        border-right: 1px solid #1E293B !important;
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #E5E7EB !important;
     }
 
-    /* Headings & Typography */
+    /* Typography */
     h1, h2, h3, h4, h5, h6 {
-        color: #F8FAFC !important;
+        color: #111827 !important;
         font-family: 'Inter', sans-serif !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em !important;
-        text-transform: uppercase !important;
         margin: 0 !important;
     }
 
-    /* Top Brand & Navbar Bar */
-    .top-navbar {
+    p, span, label, div {
+        color: #374151;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Top Navigation Header Bar */
+    .top-header-container {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 6px 0 12px 0;
-        margin-bottom: 8px;
-        border-bottom: 1px solid #1E293B;
-    }
-    .brand-title {
-        font-size: 1.25rem;
-        font-weight: 800;
-        letter-spacing: -0.01em;
-        color: #F8FAFC;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .brand-sub {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.68rem;
-        color: #06B6D4;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-    }
-
-    /* Connected 3-Stage Workflow Stepper */
-    .stepper-bar {
-        display: flex;
-        align-items: stretch;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-    .step-node {
-        flex: 1;
-        background: #0D1526;
-        border: 1px solid #1E293B;
-        border-radius: 4px;
-        padding: 10px 14px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        transition: all 0.2s ease;
-        position: relative;
-    }
-    .step-node.active {
-        border-color: #06B6D4 !important;
-        background: linear-gradient(90deg, rgba(6, 182, 212, 0.12) 0%, #0D1526 100%) !important;
-        box-shadow: 0 0 16px rgba(6, 182, 212, 0.2) !important;
-    }
-    .step-node.completed {
-        border-color: #10B981 !important;
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, #0D1526 100%) !important;
-    }
-    .step-node.halted {
-        border-color: #EF4444 !important;
-        background: linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, #0D1526 100%) !important;
-    }
-    .step-idx {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
-        font-weight: 800;
-        width: 24px;
-        height: 24px;
-        border-radius: 3px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #1E293B;
-        color: #94A3B8;
-    }
-    .step-node.active .step-idx {
-        background: #06B6D4;
-        color: #070B14;
-    }
-    .step-node.completed .step-idx {
-        background: #10B981;
-        color: #070B14;
-    }
-    .step-node.halted .step-idx {
-        background: #EF4444;
-        color: #FFFFFF;
-    }
-    .step-label {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        color: #94A3B8;
-        text-transform: uppercase;
-    }
-    .step-node.active .step-label { color: #38BDF8; }
-    .step-node.completed .step-label { color: #10B981; }
-    .step-node.halted .step-label { color: #EF4444; }
-    .step-status {
-        font-size: 0.65rem;
-        color: #64748B;
-        margin-top: 2px;
-    }
-
-    /* Modern Industrial Cards */
-    .modern-card {
-        background-color: #0D1526;
-        border: 1px solid #1E293B;
-        border-radius: 4px;
-        padding: 16px;
-        margin-bottom: 14px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .card-header-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #1E293B;
-        padding-bottom: 10px;
+        padding: 4px 0 16px 0;
         margin-bottom: 12px;
+        border-bottom: 1px solid #E5E7EB;
     }
-    .card-header-title {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.74rem;
-        font-weight: 700;
-        color: #94A3B8;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+    .header-title-text {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1E3A8A;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
     }
-    .card-header-tag {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.68rem;
-        color: #06B6D4;
+    .header-sub-text {
+        font-size: 0.85rem;
+        color: #6B7280;
+        font-weight: 400;
+        margin-top: 3px;
     }
 
-    /* Subsystem & Status Badges */
-    .badge-subsystem {
+    /* System Status Pills */
+    .mode-pill {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.68rem;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 3px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-    .badge-cyan { background-color: #082F49; color: #38BDF8; border: 1px solid #0284C7; }
-    .badge-emerald { background-color: #064E3B; color: #34D399; border: 1px solid #059669; }
-    .badge-crimson { background-color: #450A0A; color: #F87171; border: 1px solid #DC2626; }
-    .badge-amber { background-color: #451A03; color: #FBBF24; border: 1px solid #D97706; }
-    .badge-slate { background-color: #1E293B; color: #94A3B8; border: 1px solid #334155; }
-
-    /* Directive Hero Window Card */
-    .hero-directive {
-        background: #0B1120;
-        border: 1px solid #1E293B;
-        border-left: 4px solid #06B6D4;
-        border-radius: 4px;
-        padding: 16px;
-        margin-bottom: 14px;
-    }
-    .directive-meta-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-    .directive-step-tag {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #38BDF8;
-        letter-spacing: 0.05em;
-    }
-    .directive-action-text {
-        font-size: 0.96rem;
-        font-weight: 600;
-        color: #F8FAFC;
-        line-height: 1.5;
-        margin-bottom: 10px;
-    }
-    
-    /* Terminal Console Display Block */
-    .terminal-code-block {
-        background: #030712;
-        border: 1px solid #1F2937;
-        border-radius: 4px;
-        padding: 10px 14px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.8rem;
-        color: #38BDF8;
-        line-height: 1.45;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .terminal-code-block::before {
-        content: "$";
-        color: #10B981;
-        font-weight: 700;
-    }
-
-    .citation-banner {
-        background-color: #060B16;
-        border: 1px solid #1E293B;
-        border-radius: 3px;
-        padding: 6px 10px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.68rem;
-        color: #64748B;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    /* Operator Fast Action Prompt */
-    .operator-action-prompt {
-        background: rgba(6, 182, 212, 0.06);
-        border: 1px solid #0E7490;
-        border-radius: 3px;
-        padding: 8px 12px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.72rem;
-        color: #38BDF8;
-        margin-top: 10px;
-        line-height: 1.4;
-    }
-
-    /* Safety Interlock Crimson Banner */
-    .crimson-interlock-hero {
-        background: #2D0A0A;
-        border: 1px solid #DC2626;
-        border-left: 5px solid #EF4444;
-        border-radius: 4px;
-        padding: 14px 16px;
-        margin-bottom: 14px;
-        color: #FECACA;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.78rem;
-        line-height: 1.5;
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
-    }
-
-    /* Modern Confidence Digital Gauge */
-    .confidence-meter-card {
-        background: #0A0F1D;
-        border: 1px solid #1E293B;
-        border-radius: 4px;
-        padding: 18px 14px;
-        text-align: center;
-        margin-bottom: 14px;
-        position: relative;
-        overflow: hidden;
-    }
-    .confidence-meter-card::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: #1E293B;
-    }
-    .confidence-number {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 3.2rem;
-        font-weight: 800;
-        line-height: 1.0;
-        letter-spacing: -0.03em;
-    }
-    .confidence-subtitle {
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: #94A3B8;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        margin-top: 6px;
-    }
-    .confidence-progress-bar-bg {
-        width: 100%;
-        height: 6px;
-        background: #1E293B;
-        border-radius: 3px;
-        margin-top: 10px;
-        overflow: hidden;
-    }
-    .confidence-progress-fill {
-        height: 100%;
-        transition: width 0.4s ease;
-    }
-
-    /* Compatibility & Safety Verification Matrix */
-    .compat-matrix {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin-bottom: 14px;
-    }
-    .compat-item {
-        background: #090E1A;
-        border: 1px solid #1E293B;
-        border-radius: 3px;
-        padding: 8px 10px;
-        font-family: 'JetBrains Mono', monospace;
-    }
-    .compat-item-label {
-        font-size: 0.65rem;
-        color: #64748B;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 3px;
-    }
-    .compat-item-val {
-        font-size: 0.74rem;
-        font-weight: 700;
-    }
-
-    /* Event Timeline Stream */
-    .timeline-container {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        max-height: 320px;
-        overflow-y: auto;
-    }
-    .timeline-entry {
-        background: #090E1A;
-        border: 1px solid #1E293B;
-        border-radius: 3px;
-        padding: 10px 12px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.72rem;
-        transition: border-color 0.15s ease;
-    }
-    .timeline-entry:hover {
-        border-color: #334155;
-    }
-    .timeline-entry-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #161F30;
-        padding-bottom: 4px;
-        margin-bottom: 6px;
-    }
-
-    /* Console Stream Feed */
-    .console-stream-feed {
-        display: flex;
-        flex-direction: column;
         gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 9999px;
+        letter-spacing: 0.02em;
+    }
+    .mode-pill-green {
+        background-color: #ECFDF5;
+        color: #065F46;
+        border: 1px solid #A7F3D0;
+    }
+    .mode-pill-neutral {
+        background-color: #F3F4F6;
+        color: #374151;
+        border: 1px solid #E5E7EB;
+    }
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .dot-green { background-color: #059669; }
+    .dot-neutral { background-color: #6B7280; }
+
+    /* Clean White Card Surfaces */
+    .ui-card {
+        background-color: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+    .ui-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #F3F4F6;
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+    }
+    .ui-card-title {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #1E3A8A;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Badges & Pills */
+    .badge-soft-blue {
+        background-color: #EFF6FF;
+        color: #1D4ED8;
+        border: 1px solid #DBEAFE;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 9999px;
+    }
+    .badge-soft-green {
+        background-color: #ECFDF5;
+        color: #047857;
+        border: 1px solid #A7F3D0;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 9999px;
+    }
+    .badge-soft-red {
+        background-color: #FEF2F2;
+        color: #B91C1C;
+        border: 1px solid #FECACA;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 9999px;
+    }
+    .badge-soft-amber {
+        background-color: #FFFBEB;
+        color: #B45309;
+        border: 1px solid #FDE68A;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 9999px;
+    }
+
+    /* Active Step Instruction Card */
+    .step-header-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 12px;
     }
-    .console-bubble {
-        background: #060B16;
-        border: 1px solid #1E293B;
-        border-radius: 3px;
-        padding: 8px 12px;
-        font-family: 'JetBrains Mono', monospace;
+    .step-pill-indicator {
+        background-color: #EFF6FF;
+        color: #1D4ED8;
+        border: 1px solid #BFDBFE;
         font-size: 0.75rem;
-        line-height: 1.45;
-    }
-
-    /* Architecture Tour Box */
-    .architecture-tour-card {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-        padding: 10px 0;
-    }
-    .arch-pillar {
-        background: #090E1A;
-        border: 1px solid #1E293B;
-        border-radius: 3px;
-        padding: 10px 12px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.7rem;
-        line-height: 1.45;
-    }
-    .arch-pillar-title {
-        color: #38BDF8;
         font-weight: 700;
-        margin-bottom: 4px;
-        text-transform: uppercase;
-        font-size: 0.72rem;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .step-action-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #111827;
+        line-height: 1.35;
+        margin-bottom: 12px;
+    }
+    .step-instructions-box {
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        padding: 14px 16px;
+        color: #334155;
+        font-size: 0.90rem;
+        line-height: 1.55;
+        margin-bottom: 14px;
     }
 
-    /* Form Inputs & BaseWeb */
+    /* Safety Interlock Warm Red Container */
+    .safety-alert-container {
+        background-color: #FEF2F2;
+        border: 1px solid #FCA5A5;
+        border-left: 5px solid #DC2626;
+        border-radius: 6px;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+    }
+    .safety-alert-header {
+        color: #991B1B;
+        font-size: 0.95rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+    .safety-alert-body {
+        color: #7F1D1D;
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    /* Collapsible Reference Box */
+    .reference-box {
+        background-color: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-size: 0.80rem;
+        color: #4B5563;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Resolution Progress Card */
+    .progress-number-display {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1E3A8A;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+    }
+    .progress-label-text {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #4B5563;
+        margin-top: 4px;
+    }
+
+    /* Verification Verification Rows */
+    .verify-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #F3F4F6;
+        font-size: 0.84rem;
+    }
+    .verify-row:last-child {
+        border-bottom: none;
+        padding-bottom: 2px;
+    }
+    .verify-label {
+        color: #4B5563;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .verify-status {
+        font-weight: 600;
+        font-size: 0.78rem;
+    }
+
+    /* Timeline Cards */
+    .timeline-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 380px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    .timeline-item-card {
+        background-color: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        border-radius: 6px;
+        padding: 12px 14px;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+    .timeline-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    /* Form Fields & Clean Modern Inputs (Strict Light/Dark Inversion Protection) */
     div[data-baseweb="input"],
+    div[data-baseweb="base-input"],
     div[data-baseweb="textarea"],
     div[data-baseweb="select"] > div,
     input, textarea, select {
-        background-color: #060B16 !important;
-        background: #060B16 !important;
-        border: 1px solid #1E293B !important;
-        color: #F8FAFC !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-size: 0.8rem !important;
-        border-radius: 4px !important;
+        background-color: #FFFFFF !important;
+        background: #FFFFFF !important;
+        border: 1px solid #D1D5DB !important;
+        color: #111827 !important;
+        -webkit-text-fill-color: #111827 !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.88rem !important;
+        border-radius: 6px !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
     }
     div[data-baseweb="input"]:focus-within,
     div[data-baseweb="textarea"]:focus-within,
     div[data-baseweb="select"] > div:focus-within,
     input:focus, textarea:focus, select:focus {
-        border-color: #06B6D4 !important;
-        box-shadow: 0 0 0 1px #06B6D4 !important;
-    }
-    textarea::placeholder, input::placeholder {
-        color: #475569 !important;
+        border-color: #1E3A8A !important;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15) !important;
     }
 
-    /* Universal High-Contrast Industrial Buttons */
-    button,
-    button[kind="secondary"],
-    button[kind="primary"],
-    button[data-testid="baseButton-secondary"],
-    button[data-testid="baseButton-primary"],
+    /* Target specific Streamlit widgets to enforce dark text on white input canvas */
+    .stTextInput input,
+    .stTextArea textarea,
+    [data-testid="stTextInput"] input,
+    [data-testid="stTextArea"] textarea {
+        background-color: #FFFFFF !important;
+        background: #FFFFFF !important;
+        color: #111827 !important;
+        -webkit-text-fill-color: #111827 !important;
+        border: 1px solid #D1D5DB !important;
+    }
+    .stSelectbox div[data-baseweb="select"],
+    [data-testid="stSelectbox"] div[data-baseweb="select"],
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    [data-testid="stSelectbox"] div[data-baseweb="select"] * {
+        background-color: #FFFFFF !important;
+        color: #111827 !important;
+        -webkit-text-fill-color: #111827 !important;
+    }
+    ul[role="listbox"],
+    ul[role="listbox"] li,
+    div[data-baseweb="popover"],
+    div[data-baseweb="menu"],
+    div[data-baseweb="menu"] * {
+        background-color: #FFFFFF !important;
+        color: #111827 !important;
+        -webkit-text-fill-color: #111827 !important;
+    }
+    ul[role="listbox"] li:hover,
+    div[data-baseweb="menu"] li:hover {
+        background-color: #F3F4F6 !important;
+        color: #1E3A8A !important;
+        -webkit-text-fill-color: #1E3A8A !important;
+    }
+
+    /* Modern Primary & Secondary Buttons */
     div.stButton > button,
     div[data-testid="stFormSubmitButton"] > button,
     div[data-testid="stDownloadButton"] > button {
-        background-color: #111A2E !important;
-        background: #111A2E !important;
-        color: #38BDF8 !important;
-        border: 1px solid #2A3854 !important;
-        border-radius: 4px !important;
-        font-family: 'JetBrains Mono', -apple-system, sans-serif !important;
-        font-size: 0.74rem !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.04em !important;
-        text-transform: uppercase !important;
-        padding: 8px 14px !important;
-        min-height: 38px !important;
-        box-shadow: none !important;
-        outline: none !important;
+        background-color: #FFFFFF !important;
+        color: #1E3A8A !important;
+        border: 1px solid #D1D5DB !important;
+        border-radius: 6px !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        padding: 8px 16px !important;
         transition: all 0.15s ease !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
     }
-
-    button p, button span, button div,
-    div.stButton > button p, div.stButton > button span,
-    div[data-testid="stFormSubmitButton"] > button p,
-    div[data-testid="stDownloadButton"] > button p {
-        color: #38BDF8 !important;
-        background: transparent !important;
-        font-family: inherit !important;
-        font-size: inherit !important;
-        font-weight: inherit !important;
-        margin: 0 !important;
-    }
-
-    button:hover,
     div.stButton > button:hover,
     div[data-testid="stDownloadButton"] > button:hover {
-        background-color: #1E2D4A !important;
-        border-color: #06B6D4 !important;
-        color: #FFFFFF !important;
-        box-shadow: 0 0 12px rgba(6, 182, 212, 0.35) !important;
-    }
-    button:hover p, button:hover span {
-        color: #FFFFFF !important;
+        background-color: #F3F4F6 !important;
+        border-color: #9CA3AF !important;
+        color: #111827 !important;
     }
 
     /* Primary Accent Submit Button */
     div[data-testid="stFormSubmitButton"] > button {
-        background-color: #0E7490 !important;
-        border: 1px solid #06B6D4 !important;
+        background-color: #1E3A8A !important;
         color: #FFFFFF !important;
-        min-height: 42px !important;
-    }
-    div[data-testid="stFormSubmitButton"] > button p,
-    div[data-testid="stFormSubmitButton"] > button span {
-        color: #FFFFFF !important;
+        border: 1px solid #1E3A8A !important;
         font-weight: 700 !important;
+        font-size: 0.88rem !important;
+        padding: 10px 20px !important;
+        box-shadow: 0 1px 3px rgba(30, 58, 138, 0.2) !important;
     }
     div[data-testid="stFormSubmitButton"] > button:hover {
-        background-color: #0891B2 !important;
-        border-color: #38BDF8 !important;
-        box-shadow: 0 0 14px rgba(6, 182, 212, 0.55) !important;
+        background-color: #1D4ED8 !important;
+        border-color: #1D4ED8 !important;
+        color: #FFFFFF !important;
+    }
+    div[data-testid="stFormSubmitButton"] > button p {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
     }
 
-    /* Expander Elements */
+    /* Streamlit Expander Styling */
     div[data-testid="stExpander"] {
-        background-color: #0D1526 !important;
-        border: 1px solid #1E293B !important;
-        border-radius: 4px !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 6px !important;
         margin-bottom: 12px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
     }
     div[data-testid="stExpander"] summary {
-        background-color: #0D1526 !important;
-        color: #94A3B8 !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-size: 0.74rem !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        color: #374151 !important;
     }
     div[data-testid="stExpander"] summary:hover {
-        color: #06B6D4 !important;
+        color: #1E3A8A !important;
     }
     div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-        background-color: #070B14 !important;
-        border-top: 1px solid #1E293B !important;
-        padding: 12px !important;
+        background-color: #FFFFFF !important;
+        border-top: 1px solid #F3F4F6 !important;
+        padding: 14px !important;
+    }
+
+    /* Streamlit Progress Bar */
+    div[data-testid="stProgress"] > div > div > div > div {
+        background-color: #2563EB !important;
     }
 </style>
 """
 
-st.markdown(MODERN_INDUSTRIAL_CSS, unsafe_allow_html=True)
+st.markdown(REVAMPED_LIGHT_CSS, unsafe_allow_html=True)
 
 
 # ============================================================================
-# State Persistence & Backend Connectivity Bridge
+# Appliance Platform Mapping & Session State
 # ============================================================================
 
-if "session_id" not in st.session_state:
-    st.session_state.session_id = f"SESS-{uuid.uuid4().hex[:8].upper()}"
+APPLIANCE_OPTIONS = [
+    "Bosch 800 Series Dishwasher",
+    "Whirlpool Front-Load Washer",
+    "LG Inverter Refrigerator",
+    "Breville Dual Boiler Espresso Machine"
+]
 
-if "model_id" not in st.session_state:
-    st.session_state.model_id = "Apex Router Pro-X"
+APPLIANCE_TO_MODEL_ID = {
+    "Bosch 800 Series Dishwasher": "BOSCH_SHEM78",
+    "Whirlpool Front-Load Washer": "WHIRLPOOL_WASHER_ALPHA",
+    "LG Inverter Refrigerator": "LG_REFRIG_LFXS",
+    "Breville Dual Boiler Espresso Machine": "BREVILLE_BES920"
+}
 
-if "firmware_version" not in st.session_state:
-    st.session_state.firmware_version = "v4.2.0"
+MODEL_ID_TO_APPLIANCE = {v: k for k, v in APPLIANCE_TO_MODEL_ID.items()}
 
-if "operating_environment" not in st.session_state:
-    st.session_state.operating_environment = "Datacenter Rack Row 4 (Cold Aisle)"
+DEFAULT_FIRMWARE = {
+    "Bosch 800 Series Dishwasher": "Rev C / MCU 4.18.2",
+    "Whirlpool Front-Load Washer": "Rev B3 / ACU W11419171",
+    "LG Inverter Refrigerator": "Rev 4.2 / Micom EBR822304",
+    "Breville Dual Boiler Espresso Machine": "Rev 3.4 / Dual PID Logic"
+}
 
-if "error_code" not in st.session_state:
-    st.session_state.error_code = "OPT-001"
+DEFAULT_CODES = {
+    "Bosch 800 Series Dishwasher": "E15",
+    "Whirlpool Front-Load Washer": "F06 E01",
+    "LG Inverter Refrigerator": "BLNK-5",
+    "Breville Dual Boiler Espresso Machine": "Er01"
+}
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+# ============================================================================
+# Session State Hardening & Initialization
+# ============================================================================
 
-if "resolution_confidence" not in st.session_state:
-    st.session_state.resolution_confidence = 0
+def init_session_state():
+    """
+    Strict state initialization function:
+    Ensures keys ['active_model', 'current_step_idx', 'evidence_timeline',
+    'resolution_confidence', 'is_safety_halted', 'incident_exported']
+    along with appliance parameters and session essentials are safely initialized.
+    """
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = f"SESS-{uuid.uuid4().hex[:8].upper()}"
+    if "selected_appliance" not in st.session_state:
+        st.session_state.selected_appliance = "Bosch 800 Series Dishwasher"
+    if "active_model" not in st.session_state:
+        st.session_state.active_model = APPLIANCE_TO_MODEL_ID.get(st.session_state.selected_appliance, "BOSCH_SHEM78")
+    if "error_code" not in st.session_state:
+        st.session_state.error_code = DEFAULT_CODES[st.session_state.selected_appliance]
+    if "firmware_version" not in st.session_state:
+        st.session_state.firmware_version = DEFAULT_FIRMWARE[st.session_state.selected_appliance]
+    if "current_step_idx" not in st.session_state:
+        st.session_state.current_step_idx = 0
+    if "evidence_timeline" not in st.session_state:
+        st.session_state.evidence_timeline = []
+    if "resolution_confidence" not in st.session_state:
+        st.session_state.resolution_confidence = 0
+    if "is_safety_halted" not in st.session_state:
+        st.session_state.is_safety_halted = False
+    if "incident_exported" not in st.session_state:
+        st.session_state.incident_exported = None
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+    if "diagnostic_status" not in st.session_state:
+        st.session_state.diagnostic_status = "INITIALIZING"
+    if "escalation_record" not in st.session_state:
+        st.session_state.escalation_record = None
 
-if "diagnostic_status" not in st.session_state:
-    st.session_state.diagnostic_status = "READY"
-
-if "escalation_record" not in st.session_state:
-    st.session_state.escalation_record = None
-
-if "active_step_data" not in st.session_state:
-    st.session_state.active_step_data = None
+init_session_state()
 
 
-@st.cache_data(ttl=30)
+# Load Error Codes Database
+try:
+    ERROR_CODES_DB = _load_error_codes_db()
+except Exception:
+    ERROR_CODES_DB = {}
+
+
+# ============================================================================
+# OEM Step Action to Clean Title Lexicon
+# ============================================================================
+OEM_STEP_TITLES = {
+    "disconnect 120v/240v mains": "Mains Electrical Disconnection",
+    "turn off under-sink water supply": "Water Supply Isolation & Shutoff",
+    "remove lower toe-kick access cover": "Toe-Kick Panel Removal & Sump Inspection",
+    "sponge, syphon, or wet-vacuum": "Base Pan Moisture Evacuation",
+    "inspect sump perimeter o-ring": "Sump Perimeter Gasket & Seal Inspection",
+    "remove lower dish rack and rotate": "Microfilter Assembly Extraction & Cleaning",
+    "pry out white plastic drain pump": "Drain Pump Impeller Shroud Removal",
+    "inspect bldc drain pump impeller": "BLDC Impeller Vane Obstruction Inspection",
+    "verify drain pump impeller spins": "Impeller Magnetic Detent Rotation Verification",
+    "inspect rubber non-return flapper": "Non-Return Check Valve Flapper Inspection",
+    "verify white plastic drain pump": "Impeller Shroud Mechanical Detent Seating",
+    "inspect drain hose routing": "Drain Line Elevation & Routing Inspection",
+    "inspect kitchen garbage disposal": "Garbage Disposal Knockout Plug Verification",
+    "measure drain pump motor winding": "Drain Pump Winding Resistance Measurement",
+    "measure ac line voltage": "AC Supply Line Voltage Audit",
+    "verify dishwasher is hardwired": "Branch Circuit Dedicated Feed Verification",
+    "inspect rear metal power junction": "Mains Junction Box & Terminal Inspection",
+    "monitor line voltage drop": "Heater Inrush Line Sag Monitoring",
+    "disconnect ac line power cord and wait 3 minutes for mcu": "Inverter Bus Capacitor Bleed-Down",
+    "enter service diagnostic mode": "Service Diagnostic Console Mode Entry",
+    "inspect 3-wire tachometer wiring": "Tachometer Sensor Harness Inspection",
+    "rotate inner stainless wash basket": "Manual Wash Basket Drum Rotation Check",
+    "measure tachometer coil resistance": "Tachometer Coil Resistance Measurement",
+    "disconnect ac line power cord from wall outlet": "AC Power Cord Disconnection",
+    "remove top console / cabinet lid": "Upper Chassis Console Lid Removal",
+    "inspect translucent vinyl air pressure tube": "Pressure Transducer Tube Inspection",
+    "check vinyl pressure tube for kinks": "Pressure Tube Obstruction & Puncture Check",
+    "disconnect vinyl tube at sensor nipple": "Pressure Sensor Airway Clear & Purge",
+    "verify acu connector j3": "ACU Harness Voltage & Connection Verification",
+    "remove rear service access panel to expose heating": "Rear Service Panel Removal & Heater Access",
+    "discharge electrostatic potential": "Electrostatic Discharge & Terminal Inspection",
+    "measure resistance across heating element": "Heating Element Resistance Measurement",
+    "measure insulation resistance from either heater": "Heater Ground Insulation Test",
+    "disconnect ac power cord and observe mandatory 3-minute pcb": "Inverter Bus Capacitor Bleed-Down Delay",
+    "locate the red diagnostic led on the main inverter pcb": "Inverter PCB Diagnostic LED Cadence Audit",
+    "remove compressor 3-pin lead terminal cover": "Compressor 3-Pin Terminal Inspection",
+    "measure linear compressor stator coil resistance": "Linear Compressor Stator Coil Test",
+    "measure insulation resistance from terminal pins to compressor shell": "Compressor Ground Insulation Test",
+    "disconnect refrigerator ac power cord and observe 3-minute": "Inverter Compartment Service Preparation",
+    "inspect rear machine compartment condenser fan": "Condenser Fan Motor Assembly Inspection",
+    "clean wire condenser heat exchanger": "Condenser Matrix Lint Evacuation",
+    "check main inverter pcb ipm aluminum heat sink": "IPM Heat Sink Thermal Coupling Check",
+    "inspect compressor discharge line temperature": "Compressor Discharge Line Thermal Audit",
+    "inspect rear evaporator cover wall inside freezer": "Evaporator Frost Pattern & Airflow Audit",
+    "initiate forced defrost mode": "Front Panel Forced Defrost Initiation",
+    "remove freezer back wall panel": "Freezer Rear Wall Removal & Evaporator Access",
+    "measure defrost sheath heater resistance": "Defrost Sheath Heater Resistance Test",
+    "test defrost bimetal safety thermostat": "Defrost Bimetal Thermostat Continuity Test",
+    "measure defrost ntc temperature sensor resistance": "Defrost NTC Sensor Resistance Audit",
+    "verify rear water reservoir is filled": "Water Reservoir Level & Float Verification",
+    "inspect water reservoir mesh intake valve": "Intake Mesh Valve & Duckbill Gasket Check",
+    "verify both rear boiler manual brass ball drain valves": "Boiler Manual Brass Ball Drain Valves Check",
+    "inspect conductive water level probe harness wire": "Steam Boiler Level Probe Harness Inspection",
+    "listen for ulka vibratory fill pump": "Vibratory Fill Pump Acoustic Audit & Priming",
+    "unplug machine power cord from wall receptacle immediately to prevent thermal fuse": "Emergency AC Power Disconnection",
+    "allow espresso machine to cool down completely": "Boiler Thermal Cool-Down Period",
+    "remove top chassis lid (6 torx t10 screws)": "Top Chassis Lid Removal & Scald Precaution",
+    "inspect grouphead cartridge heating element wiring": "Grouphead Heating Element & NTC Wire Audit",
+    "measure grouphead ntc thermistor resistance": "Grouphead NTC Thermistor Resistance Test",
+    "unplug espresso machine from ac power socket and ensure steam boiler pressure": "Steam Boiler De-Pressurization & Power Cut",
+    "remove top chassis lid and inspect 2-pin white molex": "Main Power Board NTC-STM Connector Audit",
+    "verify wiring harness from steam boiler sensor well": "Boiler Sensor Harness Rib Clearance Check",
+    "measure ntc thermistor resistance directly across sensor probe": "Steam Boiler NTC Thermistor Resistance Test"
+}
+
+
+def get_step_title_and_instructions(raw_action: str) -> tuple[str, str]:
+    """
+    Intelligently splits or synthesizes clean titles and action descriptions
+    without ever truncating mid-word or producing broken titles.
+    """
+    if not raw_action:
+        return "Diagnostic Step", ""
+
+    # 1. Parenthesized/Prefix title: Step 1 (Title): Body or Procedure X: Title
+    m = re.search(r'(?:Step\s+\d+\s*\((.*?)\)|Procedure\s+[A-Z0-9\-]+:\s*(.*?))(?::|$)', raw_action, re.IGNORECASE)
+    if m:
+        action_title = (m.group(1) or m.group(2)).strip()
+        action_body = re.sub(r'^(?:Step\s+\d+\s*\(.*?\):?|Procedure\s+[A-Z0-9\-]+:\s*.*?)\s*', '', raw_action).strip()
+        return action_title, action_body
+
+    # 2. Mandatory Halt boundary
+    if raw_action.upper().startswith("MANDATORY HALT"):
+        action_title = "Mandatory Safety Interlock: Field Technician Boundary"
+        action_body = re.sub(r'^MANDATORY HALT:\s*', '', raw_action).strip()
+        return action_title, action_body
+
+    # 3. Curated OEM Step Title dictionary
+    lower_raw = raw_action.lower()
+    for trigger, title in OEM_STEP_TITLES.items():
+        if trigger in lower_raw:
+            return title, raw_action
+
+    # 4. Fallback intelligent phrase extraction (never cuts mid-word)
+    cand = re.sub(r'^(?:Step\s*\d+[:\-.]?|\d+[\.\)]\s*)', '', raw_action).strip()
+    split_pats = [
+        r'\s+(?:immediately\s+)?to\s+(?:halt|allow|verify|access|clear|reset|resolve|check)\b.*$',
+        r'\s+feeding\s+the\b.*$',
+        r'\s+and\s+visually\s+inspect\b.*$',
+        r'\s+using\s+(?:Torx|digital|multimeter|calibrated)\b.*$',
+        r'\s+for\s+(?:trapped|kinks|loose|weep)\b.*$'
+    ]
+    for p in split_pats:
+        m2 = re.search(p, cand, re.IGNORECASE)
+        if m2 and m2.start() > 18:
+            cand = cand[:m2.start()].strip()
+            break
+
+    cand = re.sub(r'\s+(?:and|for|to|with|by|in|at|of|from|while)$', '', cand, flags=re.IGNORECASE).strip()
+    if len(cand) > 60:
+        words = cand.split()
+        short = []
+        for w in words:
+            if len(" ".join(short + [w])) <= 52:
+                short.append(w)
+            else:
+                break
+        cand = " ".join(short)
+        cand = re.sub(r'\s+(?:and|for|to|with|by|in|at|of|from|while)$', '', cand, flags=re.IGNORECASE).strip()
+
+    title = cand.rstrip(".,:;")
+    return title, raw_action
+
+
+# Probe Cloud MaaS / Gemini Gateway Connectivity
+@st.cache_data(ttl=25)
 def check_maas_gateway_online() -> bool:
-    """Probes MaaS API connectivity or determines if airgapped fallback is active."""
+    """Verifies whether TCS GenAI Lab MaaS or Gemini gateway is responsive."""
     if not settings.maas_api_key or "your_" in settings.maas_api_key:
         return False
     try:
@@ -623,322 +689,349 @@ def check_maas_gateway_online() -> bool:
             "messages": [{"role": "user", "content": "PING"}],
             "max_tokens": 5
         }
-        with httpx.Client(timeout=2.0) as client:
+        with httpx.Client(timeout=3.0) as client:
             resp = client.post(url, headers=headers, json=payload)
-            return resp.status_code == 200
+            if resp.status_code == 200:
+                return True
     except Exception:
-        return False
+        pass
+
+    if settings.is_gemini_active:
+        try:
+            g_model = settings.model_name.split("/")[-1]
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{g_model}?key={settings.maas_api_key}"
+            with httpx.Client(timeout=3.0) as client:
+                resp = client.get(url)
+                return resp.status_code == 200
+        except Exception:
+            pass
+
+    return False
+
+
+def call_backend_or_direct(route: str, method: str = "POST", payload: Optional[dict[str, Any]] = None) -> dict[str, Any]:
+    """
+    Resilient bridge function for REST API calls.
+    Attempts communication with http://127.0.0.1:8000.
+    If FastAPI backend is running and reachable, uses the REST API.
+    If connection fails, times out, or is refused, seamlessly invokes src.agents
+    and src.tools directly in Python memory! The UI NEVER displays a connection
+    error banner or crashes; it just works.
+    """
+    connect_host = "127.0.0.1" if settings.api_host in ("0.0.0.0", "") else settings.api_host
+    backend_url = f"http://{connect_host}:{settings.api_port}{route}"
+
+    try:
+        with httpx.Client(timeout=2.0) as client:
+            if method.upper() == "POST":
+                resp = client.post(backend_url, json=payload or {})
+            else:
+                resp = client.get(backend_url)
+            if resp.status_code == 200:
+                return resp.json()
+    except Exception:
+        pass  # In-process seamless fallback
+
+    clean_route = route.split("?")[0]
+
+    if clean_route == "/api/diagnose":
+        p = payload or {}
+        session_id = p.get("session_id") or st.session_state.session_id
+        session = get_or_create_session(session_id)
+        if p.get("model_id"):
+            session.model_id = normalize_model_id(p["model_id"]) or session.model_id
+        if p.get("firmware_version"):
+            session.firmware_version = p["firmware_version"]
+        if p.get("operating_environment"):
+            session.operating_environment = p["operating_environment"]
+        if p.get("error_code"):
+            session.error_code = p["error_code"]
+
+        msg = p.get("message", "")
+        return DiagnosticCoordinator.process_turn(session_id=session_id, user_input=msg)
+
+    elif clean_route.startswith("/api/escalate/"):
+        sess_id = clean_route.split("/api/escalate/")[-1]
+        sess = get_or_create_session(sess_id)
+        sess.diagnostic_status = "ESCALATED"
+        pkg = ResolutionReviewAgent.generate_escalation_package(
+            session=sess,
+            reason="Manual operator service export requested from console."
+        )
+        return {
+            "session_id": sess_id,
+            "incident_id": pkg.get("incident_id", f"INC-{uuid.uuid4().hex[:6].upper()}"),
+            "escalation_package": pkg
+        }
+
+    elif clean_route.startswith("/api/timeline/"):
+        sess_id = clean_route.split("/api/timeline/")[-1]
+        sess = get_or_create_session(sess_id)
+        return {
+            "session_id": sess.session_id,
+            "total_steps": len(sess.timeline),
+            "resolution_confidence": sess.resolution_confidence,
+            "diagnostic_status": sess.diagnostic_status,
+            "timeline": [t.dict() if hasattr(t, "dict") else t for t in sess.timeline]
+        }
+
+    elif clean_route == "/api/models":
+        return {
+            "total": len(SUPPORTED_MODELS),
+            "models": [
+                {
+                    "model_id": k,
+                    "display_name": v,
+                    "manual_reference": f"# [MANUAL: {k}]",
+                    "supported_error_codes": [
+                        code for code, data in _load_error_codes_db().items()
+                        if data.get("model_id") == k
+                    ]
+                }
+                for k, v in SUPPORTED_MODELS.items()
+            ]
+        }
+
+    elif clean_route == "/api/codes":
+        return {"total": len(ERROR_CODES_DB), "codes": ERROR_CODES_DB}
+
+    elif clean_route.startswith("/api/codes/"):
+        code_param = clean_route.split("/api/codes/")[-1]
+        return lookup_error_code(code_param)
+
+    return {"status": "SUCCESS", "message": "In-process execution"}
 
 
 def query_diagnostic_engine(message: str) -> dict[str, Any]:
     """
-    Submits turn to FastAPI REST backend (handling 0.0.0.0 -> 127.0.0.1 loopback),
-    falling back seamlessly to direct DiagnosticCoordinator calls if backend is offline.
-    Ensures local session state is completely synchronized for seamless UI rendering.
+    Submits user observation or instruction to FastAPI backend or fallback agent pipeline
+    via resilient call_backend_or_direct.
     """
+    model_id = st.session_state.active_model
     session = get_or_create_session(st.session_state.session_id)
-    session.model_id = st.session_state.model_id
+    session.model_id = model_id
     session.firmware_version = st.session_state.firmware_version
-    session.operating_environment = st.session_state.operating_environment
     session.error_code = st.session_state.error_code
 
-    connect_host = "127.0.0.1" if settings.api_host in ("0.0.0.0", "") else settings.api_host
-    url = f"http://{connect_host}:{settings.api_port}/api/diagnose"
     payload = {
         "session_id": st.session_state.session_id,
         "message": message,
-        "model_id": st.session_state.model_id,
+        "model_id": model_id,
         "firmware_version": st.session_state.firmware_version,
-        "operating_environment": st.session_state.operating_environment,
+        "operating_environment": "Commercial / Residential Site",
         "error_code": st.session_state.error_code
     }
-    
-    # 1. Attempt FastAPI REST Endpoint
-    try:
-        with httpx.Client(timeout=4.0) as client:
-            resp = client.post(url, json=payload)
-            if resp.status_code == 200:
-                data = resp.json()
-                if "timeline" in data:
-                    from src.agents import EvidenceStep
-                    session.timeline = [
-                        EvidenceStep(**t) if isinstance(t, dict) else t for t in data["timeline"]
-                    ]
-                if not session.planned_steps:
-                    SafeStepPlannerAgent.generate_plan(session)
-                session.current_step_index = len(session.timeline)
-                return data
-    except Exception:
-        pass
 
-    # 2. Seamless Direct Coordinator Fallback
-    return DiagnosticCoordinator.process_turn(st.session_state.session_id, message)
+    data = call_backend_or_direct("/api/diagnose", method="POST", payload=payload)
 
+    if "timeline" in data:
+        from src.agents import EvidenceStep
+        session.timeline = [
+            EvidenceStep(**t) if isinstance(t, dict) else t for t in data["timeline"]
+        ]
+        st.session_state.evidence_timeline = [
+            t.dict() if hasattr(t, "dict") else t for t in session.timeline
+        ]
+    if not session.planned_steps:
+        SafeStepPlannerAgent.generate_plan(session)
 
-def get_subsystem_category(action_text: str, code_str: str) -> str:
-    """Derives structured subsystem category tag for industrial metadata displays."""
-    combined = f"{action_text} {code_str}".lower()
-    if any(k in combined for k in ["optic", "sfp", "wan", "fiber", "laser", "rx power", "opt-"]):
-        return "OPTICAL_TRANSCEIVER"
-    elif any(k in combined for k in ["thermal", "fan", "temp", "rpm", "cooling", "airflow"]):
-        return "THERMAL_INTERLOCK"
-    elif any(k in combined for k in ["power", "psu", "voltage", "ac", "dc", "breaker"]):
-        return "POWER_DELIVERY"
-    elif any(k in combined for k in ["bgp", "route", "routing", "peer", "rib", "prefix"]):
-        return "ROUTING_CONTROL_PLANE"
-    elif any(k in combined for k in ["backplane", "crc", "fabric", "serdes", "bus"]):
-        return "BACKPLANE_FABRIC"
-    elif any(k in combined for k in ["poe", "inline", "wattage", "pse"]):
-        return "POE_CONTROLLER"
-    elif any(k in combined for k in ["nvram", "flash", "crypto", "hsm", "tamper", "enclave"]):
-        return "CRYPTO_NVRAM_SECURITY"
-    return "GATEWAY_CHASSIS_CORE"
+    session.current_step_index = len(session.timeline)
+    st.session_state.current_step_idx = session.current_step_index
+    st.session_state.resolution_confidence = data.get("confidence", session.resolution_confidence)
+    st.session_state.diagnostic_status = data.get("status", session.diagnostic_status)
+    st.session_state.is_safety_halted = (
+        st.session_state.diagnostic_status == "MANDATORY_HALT_TECHNICIAN_REQUIRED"
+    )
+    if data.get("escalation_record"):
+        st.session_state.escalation_record = data["escalation_record"]
+        st.session_state.incident_exported = data["escalation_record"]
 
-
-def get_disruption_badge(disruption_level: str, requires_tech: bool) -> tuple[str, str]:
-    """Returns disruption tag text and CSS badge style."""
-    if requires_tech or disruption_level == "CRITICAL_INVASIVE":
-        return "HARDWARE ISOLATION", "badge-crimson"
-    elif disruption_level == "LOW_DISRUPTION":
-        return "SERVICE AFFECTING", "badge-amber"
-    return "NON-INVASIVE CHECK", "badge-cyan"
-
-
-# Load Error Codes Database for metadata previews
-try:
-    ERROR_CODES_DB = _load_error_codes_db()
-except Exception:
-    ERROR_CODES_DB = {}
-
-active_code_meta = ERROR_CODES_DB.get(st.session_state.error_code, {})
+    return data
 
 
 # ============================================================================
-# Modern Top Navigation & Status Bar
+# Screen Architecture: Top Navigation & Appliance Selector
 # ============================================================================
 
-is_maas_online = check_maas_gateway_online()
+is_maas_connected = check_maas_gateway_online()
 
-nav_col1, nav_col2, nav_col3 = st.columns([2.5, 1.5, 0.7])
+nav_c1, nav_c2, nav_c3 = st.columns([1.5, 1.2, 0.9])
 
-with nav_col1:
+with nav_c1:
     st.markdown(
         """
-        <div style="padding: 2px 0;">
-            <div class="brand-sub">Mission-Critical Operations // Autonomous AI Diagnostic Console</div>
-            <div class="brand-title">INDUSTRIAL ASSET DIAGNOSTIC TERMINAL</div>
+        <div style="padding: 2px 0 8px 0;">
+            <div class="header-title-text">Diagnostic Service Assistant</div>
+            <div class="header-sub-text">Intelligent step-by-step troubleshooting for certified commercial & home appliances</div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-with nav_col2:
-    badge_html = (
-        '<span class="badge-subsystem badge-emerald" title="Live MaaS cloud reasoning endpoint connected">● LIVE MAAS GATEWAY: ONLINE</span>'
-        if is_maas_online else
-        '<span class="badge-subsystem badge-cyan" title="Operating with zero-dependency autonomous local rule & retrieval engine">● AUTONOMOUS AIRGAPPED ENGINE</span>'
-    )
-    asset_tag = "ARPX-800" if "Apex" in st.session_state.model_id else "CS4K-48T"
-    st.markdown(
+with nav_c2:
+    status_label = "Cloud Gemini Connected" if settings.is_gemini_active else "Cloud MaaS Connected"
+    mode_html = (
         f"""
-        <div style="background-color: #0D1526; border: 1px solid #1E293B; padding: 6px 12px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; text-align: right;">
-            <div>GATEWAY: <span style="color: #F8FAFC; font-weight: 700;">{st.session_state.model_id}</span> [{asset_tag}]</div>
-            <div style="margin-top: 3px;">{badge_html} &nbsp;|&nbsp; <span style="color: #64748B;">{st.session_state.session_id}</span></div>
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; height: 100%; padding-bottom: 8px;">
+            <span class="mode-pill mode-pill-green">
+                <span class="status-dot dot-green"></span> {status_label}
+            </span>
         </div>
-        """,
-        unsafe_allow_html=True
+        """
+        if is_maas_connected else
+        """
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; height: 100%; padding-bottom: 8px;">
+            <span class="mode-pill mode-pill-neutral">
+                <span class="status-dot dot-neutral"></span> Airgapped Offline Mode
+            </span>
+        </div>
+        """
     )
+    st.markdown(mode_html, unsafe_allow_html=True)
 
-with nav_col3:
-    if st.button("RESET SESSION", use_container_width=True, help="Reset Diagnostic State: Clears all timeline records, resets confidence to 0%, and generates a fresh session ID."):
+with nav_c3:
+    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+    if st.button("Start New Diagnosis", use_container_width=True, help="Clear current diagnostic session and start fresh"):
         st.session_state.session_id = f"SESS-{uuid.uuid4().hex[:8].upper()}"
-        st.session_state.chat_history = []
+        st.session_state.current_step_idx = 0
+        st.session_state.evidence_timeline = []
         st.session_state.resolution_confidence = 0
+        st.session_state.is_safety_halted = False
+        st.session_state.incident_exported = None
+        st.session_state.chat_history = []
         st.session_state.diagnostic_status = "INITIALIZING"
         st.session_state.escalation_record = None
-        st.session_state.active_step_data = None
         st.rerun()
 
-st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height: 2px; border-bottom: 1px solid #E5E7EB; margin-bottom: 18px;'></div>", unsafe_allow_html=True)
 
 
 # ============================================================================
-# Dynamic 3-Stage Connected Workflow Stepper
+# Main Layout: Two Clean Columns (col_main, col_sidebar = st.columns([1.3, 0.7]))
 # ============================================================================
 
-is_started = len(st.session_state.chat_history) > 0
-is_resolved = st.session_state.diagnostic_status == "RESOLVED"
-is_halted = st.session_state.diagnostic_status in ("MANDATORY_HALT_TECHNICIAN_REQUIRED", "ESCALATED")
-
-# Stepper node classes
-step1_class = "active" if not is_started else "completed"
-step2_class = "active" if (is_started and not is_resolved and not is_halted) else ("completed" if (is_resolved or is_halted) else "")
-
-if is_resolved:
-    step3_class = "completed"
-    step3_idx_text = "✓"
-    step3_main = "RESOLVED (98%)"
-    step3_sub = "Target fault verified resolved"
-elif is_halted:
-    step3_class = "halted"
-    step3_idx_text = "!"
-    step3_main = "SAFETY HALT"
-    step3_sub = "Tier-3 technician dispatch required"
-elif is_started:
-    step3_class = "active"
-    step3_idx_text = "3"
-    step3_main = "RECORD & AUDIT"
-    step3_sub = "Submit telemetry & build audit"
-else:
-    step3_class = ""
-    step3_idx_text = "3"
-    step3_main = "RESOLUTION AUDIT"
-    step3_sub = "Verify fix or export package"
-
-step1_sub = "Asset identity locked" if is_started else "Configure model & code"
-step2_sub = "Executing isolation directive" if (is_started and not is_resolved and not is_halted) else ("Directives executed" if (is_resolved or is_halted) else "Standby for isolation")
-
-st.markdown(
-    f"""
-    <div class="stepper-bar">
-        <div class="step-node {step1_class}" title="Step 1: Set Target Hardware Asset Model, Firmware Build, and Diagnostic Fault Code">
-            <div class="step-idx">{'✓' if is_started else '1'}</div>
-            <div>
-                <div class="step-label">1. ASSET & FAULT CONFIGURATION</div>
-                <div class="step-status">{step1_sub}</div>
-            </div>
-        </div>
-        <div class="step-node {step2_class}" title="Step 2: Execute OEM diagnostic directives authorized by the Safe-Step Sequencer">
-            <div class="step-idx">{'✓' if (is_resolved or is_halted) else '2'}</div>
-            <div>
-                <div class="step-label">2. ISOLATION DIRECTIVE</div>
-                <div class="step-status">{step2_sub}</div>
-            </div>
-        </div>
-        <div class="step-node {step3_class}" title="Step 3: Submit observations to reach confirmed 98% resolution or safety escalation">
-            <div class="step-idx">{step3_idx_text}</div>
-            <div>
-                <div class="step-label">3. {step3_main}</div>
-                <div class="step-status">{step3_sub}</div>
-            </div>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# Collapsible Architecture & Operator Guide
-with st.expander("OPERATOR GUIDE // HOW THE 4-STAGE AI ENGINE WORKS", expanded=False):
-    st.markdown(
-        """
-        <div class="architecture-tour-card">
-            <div class="arch-pillar">
-                <div class="arch-pillar-title">1. PARAMETER GATING</div>
-                The Symptom Clarifier Agent enforces strict parameter completeness (Model ID, Firmware, Operating Context). Missing parameters prevent execution to avoid erroneous diagnosis.
-            </div>
-            <div class="arch-pillar">
-                <div class="arch-pillar-title">2. COMPATIBILITY LOCK</div>
-                Vector database manual retrieval pre-filters strictly on target hardware metadata. Procedures for Apex Router Pro-X can never cross-contaminate CoreSwitch 4000.
-            </div>
-            <div class="arch-pillar">
-                <div class="arch-pillar-title">3. SAFE-STEP SEQUENCER</div>
-                Troubleshooting progresses strictly from least-disruptive software checks (CLI telemetry) to physical inspection. Critical invasive steps trigger safety locks.
-            </div>
-            <div class="arch-pillar">
-                <div class="arch-pillar-title">4. EVIDENCE AUDIT</div>
-                Every operator observation is timestamped into an immutable audit trail. Quantitative Resolution Confidence is calculated mathematically (0% to 100%).
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-# ============================================================================
-# Two-Column Modern Operational Layout
-# ============================================================================
+col_main, col_sidebar = st.columns([1.3, 0.7])
 
 current_session = get_or_create_session(st.session_state.session_id)
-col_left, col_right = st.columns([1.22, 0.78])
+active_model_id = APPLIANCE_TO_MODEL_ID.get(st.session_state.selected_appliance, "BOSCH_SHEM78")
+st.session_state.active_model = active_model_id
+current_session.model_id = active_model_id
+current_session.firmware_version = st.session_state.firmware_version
+current_session.error_code = st.session_state.error_code
 
 # ----------------------------------------------------------------------------
-# Left Column: Diagnostic Command Center
+# Left Column: Guided Troubleshooting Walkthrough
 # ----------------------------------------------------------------------------
-with col_left:
-    
-    # 1. Hardware Asset & Diagnostic Configuration Deck
-    st.markdown(
-        """
-        <div class="modern-card" style="padding: 14px 16px;">
-            <div class="card-header-bar" style="margin-bottom: 10px; padding-bottom: 8px;">
-                <div class="card-header-title">
-                    <span>ASSET PROFILE & DIAGNOSTIC FAULT SETUP</span>
+with col_main:
+
+    # 1. Appliance Status Banner & Configuration Card
+    with st.container():
+        st.markdown(
+            """
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <div class="ui-card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                        Target Appliance Equipment
+                    </div>
+                    <span class="badge-soft-blue">OEM Certified Manual</span>
                 </div>
-                <div class="card-header-tag">GATE: STRICT METADATA LOCK</div>
-            </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    cfg_col1, cfg_col2 = st.columns([1, 1])
-    with cfg_col1:
-        model_options = ["Apex Router Pro-X", "CoreSwitch 4000"]
-        st.session_state.model_id = st.selectbox(
-            "Target Hardware Asset",
-            options=model_options,
-            index=0 if "Apex" in st.session_state.model_id else 1,
-            help="Select the exact target network hardware model. Compatibility gating restricts RAG manual queries strictly to this hardware."
-        )
-    with cfg_col2:
-        code_choices = list(ERROR_CODES_DB.keys()) if ERROR_CODES_DB else ["OPT-001", "ERR-ARPX-101", "ERR-CS4K-215"]
-        st.session_state.error_code = st.selectbox(
-            "Target Diagnostic Fault Code",
-            options=code_choices,
-            index=0 if st.session_state.error_code not in code_choices else code_choices.index(st.session_state.error_code),
-            help="Select the active diagnostic fault code from the hardware register (e.g. OPT-001 for optical transceiver signal loss)."
+            """,
+            unsafe_allow_html=True
         )
 
-    cfg_col3, cfg_col4 = st.columns([1, 1])
-    with cfg_col3:
-        st.session_state.firmware_version = st.text_input(
-            "Firmware Build Release",
-            value=st.session_state.firmware_version,
-            help="Operating firmware version. Used by Symptom Clarifier Agent to validate semver compatibility."
-        )
-    with cfg_col4:
-        st.session_state.operating_environment = st.text_input(
-            "Deployment Environment Context",
-            value=st.session_state.operating_environment,
-            help="Operating deployment environment (e.g. Datacenter Cold Aisle, Edge POP). Used to set baseline thermal/environmental expectations."
-        )
+        app_col1, app_col2 = st.columns([1.2, 0.8])
+        with app_col1:
+            prev_app = st.session_state.selected_appliance
+            st.session_state.selected_appliance = st.selectbox(
+                "Select Appliance Platform",
+                options=APPLIANCE_OPTIONS,
+                index=APPLIANCE_OPTIONS.index(st.session_state.selected_appliance) if st.session_state.selected_appliance in APPLIANCE_OPTIONS else 0,
+                label_visibility="collapsed"
+            )
+            # Update default codes and firmware if appliance changed cleanly without KeyError
+            if st.session_state.selected_appliance != prev_app:
+                st.session_state.active_model = APPLIANCE_TO_MODEL_ID[st.session_state.selected_appliance]
+                st.session_state.error_code = DEFAULT_CODES[st.session_state.selected_appliance]
+                st.session_state.firmware_version = DEFAULT_FIRMWARE[st.session_state.selected_appliance]
+                st.session_state.current_step_idx = 0
+                st.session_state.evidence_timeline = []
+                st.session_state.resolution_confidence = 0
+                st.session_state.is_safety_halted = False
+                st.session_state.incident_exported = None
+                st.session_state.chat_history = []
+                st.session_state.diagnostic_status = "INITIALIZING"
+                st.session_state.escalation_record = None
 
-    # Active Fault Code Metadata Quick Banner
-    if active_code_meta:
-        sev_color = "#EF4444" if active_code_meta.get("severity") == "CRITICAL" else ("#F59E0B" if active_code_meta.get("severity") == "HIGH" else "#06B6D4")
+                current_session.model_id = st.session_state.active_model
+                current_session.error_code = st.session_state.error_code
+                current_session.firmware_version = st.session_state.firmware_version
+                current_session.current_step_index = 0
+                current_session.timeline = []
+                current_session.planned_steps = []
+                current_session.resolution_confidence = 0
+                current_session.diagnostic_status = "INITIALIZING"
+                current_session.halt_reason = None
+                current_session.escalation_record = None
+                st.rerun()
+
+        # Available codes for this platform
+        active_model_id = APPLIANCE_TO_MODEL_ID[st.session_state.selected_appliance]
+        avail_codes = [c for c, d in ERROR_CODES_DB.items() if d.get("model_id") == active_model_id]
+        if not avail_codes:
+            avail_codes = ["E15", "E24", "E25", "E27"]
+
+        with app_col2:
+            code_pos = avail_codes.index(st.session_state.error_code) if st.session_state.error_code in avail_codes else 0
+            st.session_state.error_code = st.selectbox(
+                "Diagnostic Code",
+                options=avail_codes,
+                index=code_pos,
+                label_visibility="collapsed"
+            )
+
+        # Meta detail banner
+        code_meta = ERROR_CODES_DB.get(st.session_state.error_code, {})
+        subsystem_str = code_meta.get("subsystem", "General Hydraulics")
+        desc_str = code_meta.get("description", "Standard diagnostic routine")
+        sev_str = code_meta.get("severity", "HIGH")
+        sev_badge = "badge-soft-red" if sev_str == "CRITICAL" else ("badge-soft-amber" if sev_str == "HIGH" else "badge-soft-blue")
+
         st.markdown(
             f"""
-            <div style="background: #060B16; border: 1px solid #1E293B; border-left: 3px solid {sev_color}; padding: 8px 10px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; margin-top: 8px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-                    <span style="color: #94A3B8;">SUBSYSTEM: <strong style="color: #F8FAFC;">{active_code_meta.get('subsystem', 'N/A')}</strong></span>
-                    <span style="color: {sev_color}; font-weight: 700;">SEVERITY: {active_code_meta.get('severity', 'NORMAL')}</span>
+            <div style="background-color: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px; padding: 10px 14px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 0.80rem; font-weight: 600; color: #1E3A8A;">Platform: {st.session_state.selected_appliance}</span>
+                    <span class="{sev_badge}">Severity: {sev_str}</span>
                 </div>
-                <div style="color: #CBD5E1;">SYMPTOM: {active_code_meta.get('symptom', 'No symptom metadata')}</div>
+                <div style="font-size: 0.82rem; color: #4B5563;">
+                    <strong>Subsystem:</strong> {subsystem_str} &nbsp;|&nbsp; <strong>Firmware:</strong> {st.session_state.firmware_version}
+                </div>
+                <div style="font-size: 0.80rem; color: #6B7280; margin-top: 3px;">
+                    {desc_str}
+                </div>
+            </div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-    # If isolation sequence not initialized, show prominent start button
+    # If session not started, show clean "Begin Guided Diagnosis" prompt
     if not st.session_state.chat_history:
-        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-        if st.button("▶ INITIALIZE ASSET ISOLATION SEQUENCE", use_container_width=True, help="Initiates procedural isolation check: Queries authorized manuals, loads non-disruptive Step 01."):
-            init_msg = (
-                f"Model: {st.session_state.model_id}, "
-                f"Firmware: {st.session_state.firmware_version}, "
-                f"Environment: {st.session_state.operating_environment}, "
-                f"Code: {st.session_state.error_code}"
-            )
-            resp = query_diagnostic_engine(init_msg)
+        st.markdown(
+            """
+            <div class="ui-card" style="text-align: center; padding: 28px 20px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                <div style="font-size: 1.10rem; font-weight: 700; color: #111827; margin-bottom: 6px;">Ready to Begin Guided Troubleshooting</div>
+                <div style="font-size: 0.85rem; color: #6B7280; max-width: 480px; margin: 0 auto 18px auto;">
+                    The assistant will sequence manufacturer-approved diagnostic checks from least disruptive routines to verified electrical/hydraulic isolations.
+                </div>
+            """,
+            unsafe_allow_html=True
+        )
+        if st.button("Begin Guided Diagnosis", use_container_width=True):
+            init_turn = f"{st.session_state.selected_appliance} with code {st.session_state.error_code}"
+            resp = query_diagnostic_engine(init_turn)
             st.session_state.diagnostic_status = resp.get("status", "IN_PROGRESS")
             st.session_state.resolution_confidence = resp.get("confidence", 0)
             st.session_state.escalation_record = resp.get("escalation_record")
@@ -948,16 +1041,9 @@ with col_left:
                 "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")
             })
             st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Synchronize UI configurations with active session state
-    current_session.model_id = st.session_state.model_id
-    current_session.firmware_version = st.session_state.firmware_version
-    current_session.operating_environment = st.session_state.operating_environment
-    current_session.error_code = st.session_state.error_code
-
-    # Determine Active Step Metadata
+    # Determine Active Planned Step
     active_step = None
     step_num = 1
     total_steps = max(len(current_session.planned_steps), 1)
@@ -977,275 +1063,379 @@ with col_left:
             step_num = 1
             total_steps = len(current_session.planned_steps)
 
-    # 2. Hero Active Directive Card (when sequence active)
-    if active_step:
-        subsystem_tag = get_subsystem_category(active_step.get("action", ""), st.session_state.error_code)
-        disrupt_text, disrupt_badge = get_disruption_badge(
-            active_step.get("disruption_level", "NON_DISRUPTIVE"),
-            active_step.get("requires_authorized_technician", False)
-        )
-        citation_ref = active_step.get("source_ref", "Corporate IT ESM-NET-2026-V4")
-        action_text = active_step.get("action", "")
-        cmd_match = re.search(r"'(.*?)'", action_text)
-        cli_command = cmd_match.group(1) if cmd_match else None
-        cmd_block = f'<div class="terminal-code-block">{cli_command}</div>' if cli_command else ''
-        hero_html = f"""<div class="hero-directive">
-<div class="directive-meta-bar">
-<span class="directive-step-tag">DIAGNOSTIC DIRECTIVE // STEP {step_num:02d} OF {total_steps:02d}</span>
-<div>
-<span class="badge-subsystem badge-cyan">{subsystem_tag}</span>
-<span class="badge-subsystem {disrupt_badge}">{disrupt_text}</span>
-</div>
-</div>
-<div class="directive-action-text">{action_text}</div>
-{cmd_block}
-<div class="citation-banner">
-<span>SOURCE: {citation_ref}</span>
-<span>AUTHORITY: OEM CERTIFIED ESM-NET-2026</span>
-</div>
-<div class="operator-action-prompt">
-<strong>[OPERATOR ACTION REQUIRED]</strong> Execute the directive above on target device. Record the empirical result or telemetry reading in the console below, or trigger a test simulation preset.
-</div>
-</div>"""
-        st.markdown(hero_html, unsafe_allow_html=True)
-
-    # 3. Safety Interlock Warning Card (Crimson)
-    is_halt = (
-        st.session_state.diagnostic_status == "MANDATORY_HALT_TECHNICIAN_REQUIRED"
-        or (active_step and active_step.get("requires_authorized_technician"))
-    )
-
-    if is_halt:
-        crimson_html = textwrap.dedent("""
-<div class="crimson-interlock-hero">
-    <strong>CRITICAL SAFETY INTERLOCK ENGAGED: HIGH VOLTAGE / LASER RADIATION HAZARD</strong><br/>
-    Safety Directive: Physical line card reseating, high-speed backplane inspection, or transceiver replacement on energized equipment requires Certified Field Technician authorization. Manual disassembly is blocked under NEBS L3 compliance.
-</div>
-        """).strip()
-        st.markdown(crimson_html, unsafe_allow_html=True)
-
-    # 4. Operator Telemetry Submission Form
-    st.markdown(
-        """
-        <div class="modern-card">
-            <div class="card-header-bar">
-                <div class="card-header-title">
-                    <span>OPERATOR OBSERVATION CONSOLE</span>
-                </div>
-                <div class="card-header-tag">INPUT: CLI TELEMETRY OR PHYSICAL AUDIT</div>
-            </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    with st.form("observation_form", clear_on_submit=True):
-        operator_input = st.text_area(
-            "Empirical Operator Telemetry Readout",
-            placeholder="Type telemetry output (e.g., optical power dBm, error counters, drop statistics) or physical inspection findings...",
-            height=76,
-            label_visibility="collapsed",
-            help="Submit your CLI telemetry readout or physical observation. The Resolution Review Agent evaluates this against OEM thresholds."
-        )
-        commit_btn = st.form_submit_button(
-            "[COMMIT TELEMETRY & ADVANCE STEP]",
-            use_container_width=True,
-            help="Submits your observation to the Resolution Review Agent. Updates confidence score and advances to next authorized step."
-        )
-
-        if commit_btn and operator_input.strip():
-            st.session_state.chat_history.append({
-                "role": "OPERATOR",
-                "content": operator_input.strip(),
-                "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")
-            })
-            
-            engine_resp = query_diagnostic_engine(operator_input.strip())
-            st.session_state.diagnostic_status = engine_resp.get("status", st.session_state.diagnostic_status)
-            st.session_state.resolution_confidence = engine_resp.get("confidence", st.session_state.resolution_confidence)
-            if engine_resp.get("escalation_record"):
-                st.session_state.escalation_record = engine_resp["escalation_record"]
-
-            st.session_state.chat_history.append({
-                "role": "SYSTEM",
-                "content": engine_resp.get("message", ""),
-                "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")
-            })
-            st.rerun()
-
-    # Fast One-Click Test Simulation Presets
-    st.markdown("<div style='font-size: 0.68rem; color: #94A3B8; font-family: \"JetBrains Mono\", monospace; text-transform: uppercase; margin: 10px 0 6px 0;'>ONE-CLICK TEST TELEMETRY PRESETS (HOVER TO PREVIEW):</div>", unsafe_allow_html=True)
-    p_col1, p_col2, p_col3 = st.columns(3)
-
-    with p_col1:
-        if st.button("PRESET 1: SFP RX Power (-28.2 dBm)", use_container_width=True, help="Simulates optical power below the -24.0 dBm threshold. Logs abnormal reading and advances to cleaning directive."):
-            p1_text = "CLI telemetry 'show interfaces wan0 optical-diagnostics' reports SFP RX Power sub-threshold (-28.2 dBm), LOS asserted abnormal"
-            st.session_state.chat_history.append({"role": "OPERATOR", "content": p1_text, "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
-            resp = query_diagnostic_engine(p1_text)
-            st.session_state.diagnostic_status = resp.get("status", st.session_state.diagnostic_status)
-            st.session_state.resolution_confidence = resp.get("confidence", st.session_state.resolution_confidence)
-            if resp.get("escalation_record"):
-                st.session_state.escalation_record = resp["escalation_record"]
-            st.session_state.chat_history.append({"role": "SYSTEM", "content": resp.get("message", ""), "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
-            st.rerun()
-
-    with p_col2:
-        if st.button("PRESET 2: Cleaned End-Face (-11.5 dBm)", use_container_width=True, help="Simulates successful ferrule cleaning, restoring normal power (-11.5 dBm) and triggering 98% FAULT RESOLVED."):
-            p2_text = "Optical fiber end-face cleaned; power restored to -11.5 dBm, nominal operational status verified"
-            st.session_state.chat_history.append({"role": "OPERATOR", "content": p2_text, "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
-            resp = query_diagnostic_engine(p2_text)
-            st.session_state.diagnostic_status = resp.get("status", st.session_state.diagnostic_status)
-            st.session_state.resolution_confidence = resp.get("confidence", st.session_state.resolution_confidence)
-            if resp.get("escalation_record"):
-                st.session_state.escalation_record = resp["escalation_record"]
-            st.session_state.chat_history.append({"role": "SYSTEM", "content": resp.get("message", ""), "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
-            st.rerun()
-
-    with p_col3:
-        if st.button("PRESET 3: PSU High Voltage Alert", use_container_width=True, help="Simulates an internal power supply fault to test the deterministic Crimson Safety Interlock halt."):
-            p3_text = "Internal PSU capacitor bank humming; high voltage alert, breaker tripped abnormal"
-            st.session_state.chat_history.append({"role": "OPERATOR", "content": p3_text, "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
-            resp = query_diagnostic_engine(p3_text)
-            st.session_state.diagnostic_status = resp.get("status", st.session_state.diagnostic_status)
-            st.session_state.resolution_confidence = resp.get("confidence", st.session_state.resolution_confidence)
-            if resp.get("escalation_record"):
-                st.session_state.escalation_record = resp["escalation_record"]
-            st.session_state.chat_history.append({"role": "SYSTEM", "content": resp.get("message", ""), "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
-            st.rerun()
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # 5. Live Console Stream Feed (Collapsible / Compact)
-    if st.session_state.chat_history:
-        with st.expander(f"LIVE INTERACTION CONSOLE FEED ({len(st.session_state.chat_history)} ENTRIES)", expanded=False):
-            st.markdown("<div class='console-stream-feed'>", unsafe_allow_html=True)
-            for entry in st.session_state.chat_history:
-                is_op = entry["role"] == "OPERATOR"
-                tag_color = "#38BDF8" if is_op else "#10B981"
-                prefix = "OPERATOR TELEMETRY" if is_op else "SYSTEM AGENT"
-                st.markdown(
-                    f"""
-                    <div class="console-bubble" style="border-left: 3px solid {tag_color};">
-                        <div style="font-size: 0.65rem; color: #64748B; margin-bottom: 2px;">{entry['timestamp']} UTC // <span style="color: {tag_color}; font-weight: 700;">{prefix}</span></div>
-                        <div style="color: {'#E2E8F0' if is_op else '#38BDF8'};">{entry['content']}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-            st.markdown("</div>", unsafe_allow_html=True)
-
-
-# ----------------------------------------------------------------------------
-# Right Column: Audit, Telemetry & Resolution Package
-# ----------------------------------------------------------------------------
-with col_right:
-    
-    # 1. Quantitative Resolution Confidence Meter Card
-    conf_val = st.session_state.resolution_confidence
+    # 2. Active Diagnostic Step Card or Resolved Card
     if st.session_state.diagnostic_status == "RESOLVED":
-        meter_status_str = "FAULT RESOLVED"
-        meter_color = "#10B981"
-        bar_fill_color = "#10B981"
-        badge_style = "badge-emerald"
-    elif st.session_state.diagnostic_status in ("MANDATORY_HALT_TECHNICIAN_REQUIRED", "ESCALATED"):
-        meter_status_str = "ESCALATION MANDATED"
-        meter_color = "#EF4444"
-        bar_fill_color = "#EF4444"
-        badge_style = "badge-crimson"
-    else:
-        meter_status_str = "DIAGNOSING"
-        meter_color = "#06B6D4"
-        bar_fill_color = "#06B6D4"
-        badge_style = "badge-cyan"
-
-    meter_html = textwrap.dedent(f"""
-<div class="confidence-meter-card" title="Quantitative Confidence calculated dynamically: 15-75% during isolation | 98% upon confirmed fault clearance | 94% on mandatory safety dispatch">
-    <div class="confidence-number" style="color: {meter_color};">{conf_val}%</div>
-    <div class="confidence-subtitle">
-        RESOLUTION CONFIDENCE &nbsp;|&nbsp; <span class="badge-subsystem {badge_style}">{meter_status_str}</span>
-    </div>
-    <div class="confidence-progress-bar-bg">
-        <div class="confidence-progress-fill" style="width: {conf_val}%; background-color: {bar_fill_color};"></div>
-    </div>
-</div>
-    """).strip()
-    st.markdown(meter_html, unsafe_allow_html=True)
-
-    # 2. Compatibility & Safety Verification Matrix
-    compat_html = textwrap.dedent(f"""
-<div class="compat-matrix">
-    <div class="compat-item" title="Model compatibility lock prevents cross-model manual hallucination">
-        <div class="compat-item-label">MODEL GATE</div>
-        <div class="compat-item-val" style="color: #10B981;">MATCHED ({st.session_state.model_id[:13]})</div>
-    </div>
-    <div class="compat-item" title="Firmware semver verified against authorized manual baseline">
-        <div class="compat-item-label">FIRMWARE GATE</div>
-        <div class="compat-item-val" style="color: #10B981;">VERIFIED ({st.session_state.firmware_version})</div>
-    </div>
-    <div class="compat-item" title="Operating environment profile context">
-        <div class="compat-item-label">ENVIRONMENT</div>
-        <div class="compat-item-val" style="color: #38BDF8;">COLD AISLE (DC)</div>
-    </div>
-    <div class="compat-item" title="Technician safety clearance level">
-        <div class="compat-item-label">SAFETY CLEARANCE</div>
-        <div class="compat-item-val" style="color: {'#EF4444' if is_halt else '#10B981'};">
-            {'TIER-3 CERTIFIED' if is_halt else 'TIER-1 OPERATOR'}
-        </div>
-    </div>
-</div>
-    """).strip()
-    st.markdown(compat_html, unsafe_allow_html=True)
-
-    # 3. Chronological Evidence Timeline Card
-    st.markdown(
-        """
-        <div class="modern-card">
-            <div class="card-header-bar">
-                <div class="card-header-title">
-                    <span>IMMUTABLE EVIDENCE AUDIT LOG</span>
+        st.markdown(
+            f"""
+            <div class="ui-card" style="border-left: 5px solid #059669; background-color: #F0FDF4;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        <div style="font-size: 1.15rem; font-weight: 700; color: #065F46;">Fault Successfully Resolved</div>
+                    </div>
+                    <span class="badge-soft-green">98% Confidence</span>
                 </div>
-                <div class="card-header-tag" style="color: #10B981;">AUDIT: SEALED</div>
+                <div style="color: #166534; font-size: 0.90rem; line-height: 1.5; margin-bottom: 8px;">
+                    Normal operating telemetry has been confirmed. The equipment is restored to certified operational parameters and eligible for return to service.
+                </div>
+                <div style="font-size: 0.82rem; color: #047857;">
+                    Review the chronological action history on the right panel or export the service summary for documentation. Click <strong>Start New Diagnosis</strong> above to troubleshoot another asset.
+                </div>
             </div>
-        """,
-        unsafe_allow_html=True
+            """,
+            unsafe_allow_html=True
+        )
+    elif active_step:
+        raw_action = active_step.get("action", "")
+        subsystem_tag = active_step.get("subsystem", "Mechanical")
+        disruption_lvl = active_step.get("disruption_level", "NON_DISRUPTIVE").replace("_", " ").title()
+        citation_src = active_step.get("source_ref", "OEM Service Manual Standard")
+        boundary_dir = active_step.get("boundary_directive", "Standard field maintenance guidelines apply.")
+
+        # Clean plain-language action title & detailed instruction body
+        action_title, action_body = get_step_title_and_instructions(raw_action)
+
+        st.markdown(
+            f"""
+            <div class="ui-card">
+                <div class="step-header-box">
+                    <span class="step-pill-indicator">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                        Step {step_num} of {total_steps}
+                    </span>
+                    <div>
+                        <span class="badge-soft-blue">{subsystem_tag}</span>
+                        <span class="badge-soft-green">{disruption_lvl}</span>
+                    </div>
+                </div>
+                <div class="step-action-title">{action_title}</div>
+                <div class="step-instructions-box">
+                    <div style="font-weight: 600; color: #1E3A8A; margin-bottom: 6px;">Recommended Action:</div>
+                    {action_body}
+                </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        with st.expander("View Manual Source & Safety Boundary", expanded=False):
+            st.markdown(
+                f"""
+                <div class="reference-box" style="margin-bottom: 8px;">
+                    <div><strong>Manual Source:</strong> {citation_src}</div>
+                    <div class="badge-soft-blue">Authority: OEM Field Spec</div>
+                </div>
+                <div style="font-size: 0.82rem; color: #4B5563; line-height: 1.5;">
+                    <strong>Authorization Boundary:</strong> {boundary_dir}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # 3. Safety Interlock Card (Conditional)
+    is_safety_halt = (
+        st.session_state.diagnostic_status == "MANDATORY_HALT_TECHNICIAN_REQUIRED"
+        or (active_step and active_step.get("requires_technician") and st.session_state.diagnostic_status != "RESOLVED")
     )
 
-    timeline_steps = current_session.timeline
+    if is_safety_halt:
+        # Appliance-specific safety copy
+        if active_model_id == "BOSCH_SHEM78":
+            safety_sub = "240V Base Pan Electrical Hazard"
+            safety_exp = "Line voltage (120V/240V AC) is present on exposed heater terminals and circulation pump contacts in the lower base pan. Do not disassemble while connected to mains power."
+        elif active_model_id == "WHIRLPOOL_WASHER_ALPHA":
+            safety_sub = "Direct-Drive Capacitor Discharge (400V DC) & 1200 RPM Spin Basket"
+            safety_exp = "Inverter bus capacitors hold high-voltage DC charge. A mandatory 3-minute bleed-down delay and door lock switch interlock must be maintained."
+        elif active_model_id == "LG_REFRIG_LFXS":
+            safety_sub = "Flammable R600a Isobutane Refrigerant Isolation"
+            safety_exp = "Hydrocarbon refrigerant R600a requires EPA Universal Certification. Open flames and brazing are prohibited; certified flameless Lokring crimps and forced ventilation are mandated."
+        elif active_model_id == "BREVILLE_BES920":
+            safety_sub = "15-Bar Pressurized Steam Boiler Scalding Hazard"
+            safety_exp = "Superheated steam and boiling water under 15-bar hydraulic pressure. A 45-minute cool-down and manual petcock depressurization are required before brass valve servicing."
+        else:
+            safety_sub = "Certified Field Technician Boundary Reached"
+            safety_exp = "This procedure involves energized high-voltage or sealed hydraulic systems exceeding basic user clearance."
 
-    if not timeline_steps:
+        st.markdown(
+            f"""
+            <div class="safety-alert-container">
+                <div class="safety-alert-header">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Safety Stop: Authorized Technician Required
+                </div>
+                <div class="safety-alert-body">
+                    <strong>{safety_sub}:</strong> This step exceeds basic user clearance. A certified technician dispatch has been prepared to ensure safe handling of high-voltage electronics or pressurized systems.
+                    <div style="margin-top: 6px; font-size: 0.80rem; color: #991B1B;">{safety_exp}</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # 4. User Feedback & Telemetry Section
+    if st.session_state.diagnostic_status != "RESOLVED":
         st.markdown(
             """
-            <div style="background-color: #060B16; border: 1px dashed #1E293B; border-radius: 4px; padding: 18px 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #64748B; text-align: center;">
-                STANDBY: EVIDENCE TIMELINE INITIALIZING<br/>
-                <span style="font-size: 0.65rem; color: #475569;">Execute diagnostic checks to record chronological verification.</span>
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <div class="ui-card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        User Observation & Telemetry
+                    </div>
+                    <span class="badge-soft-blue">Diagnostic Input</span>
+                </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        with st.form("observation_form", clear_on_submit=True):
+            st.markdown("<div style='font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 6px;'>What do you see? (e.g., Water is drained, LED blinking, humming sound stops):</div>", unsafe_allow_html=True)
+            user_obs = st.text_area(
+                "Observation Details",
+                placeholder="Type your physical observation, multimeter measurement, or sound here...",
+                height=70,
+                label_visibility="collapsed"
+            )
+            submit_btn = st.form_submit_button("Confirm Observation & Next Step", use_container_width=True)
+
+            if submit_btn and user_obs.strip():
+                st.session_state.chat_history.append({
+                    "role": "USER",
+                    "content": user_obs.strip(),
+                    "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")
+                })
+                resp = query_diagnostic_engine(user_obs.strip())
+                st.session_state.diagnostic_status = resp.get("status", st.session_state.diagnostic_status)
+                st.session_state.resolution_confidence = resp.get("confidence", st.session_state.resolution_confidence)
+                if resp.get("escalation_record"):
+                    st.session_state.escalation_record = resp["escalation_record"]
+
+                st.session_state.chat_history.append({
+                    "role": "SYSTEM",
+                    "content": resp.get("message", ""),
+                    "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")
+                })
+                st.rerun()
+
+        # Quick-Select Test Buttons corresponding to common scenarios for the selected appliance
+        st.markdown("<div style='font-size: 0.80rem; font-weight: 600; color: #4B5563; margin: 12px 0 6px 0;'>Quick-Select Scenario Presets:</div>", unsafe_allow_html=True)
+
+        # Preset configurations based on selected appliance
+        if active_model_id == "BOSCH_SHEM78":
+            presets = [
+                ("Impeller Spins Freely Without Debris", "Impeller is completely clear of debris, rotates smoothly in magnetic 90-degree tactile detents, normal"),
+                ("Found Foreign Object in Pump Cavity", "Found fruit seed and glass shard lodged under drain pump impeller; cleaned and removed abnormal"),
+                ("Water Drained and Sump Trough Dry", "Base pan trough is completely dry, EPS float switch rested down, normal")
+            ]
+        elif active_model_id == "WHIRLPOOL_WASHER_ALPHA":
+            presets = [
+                ("Basket Spins Smoothly by Hand", "Inner stainless wash basket spins freely with zero bearing drag, tachometer resistance 122 Ohms normal"),
+                ("Pressure Sensor Tube Clear & Snug", "Pressure transducer vinyl air tube inspected, cleared of detergent suds, airtight normal"),
+                ("Heating Element Open Circuit", "Wash heating element terminals measured with multimeter: infinite resistance, blown element abnormal")
+            ]
+        elif active_model_id == "LG_REFRIG_LFXS":
+            presets = [
+                ("Defrost Heater Resistance 96 Ohms Normal", "Evaporator defrost sheath heater measured 96 Ohms balanced, bimetal fuse closed 0 Ohms normal"),
+                ("Linear Compressor Buzzing with 5-Blink LED", "Inverter PCB red diagnostic LED flashes 5 rapid blinks, compressor buzzes without reciprocating abnormal"),
+                ("Condenser Fan Blades Clean & Spinning", "Condenser fan motor runs quietly, heat exchanger coils vacuumed clean normal")
+            ]
+        else:  # Breville BES920
+            presets = [
+                ("Water Reservoir Full & Level Probe Connected", "Water tank filled with filtered water, magnetic float at top, level probe wire tight normal"),
+                ("Boiler Pressure Gauge Stuck at 0 Bar", "Startup fill pump times out after 90 seconds, analog pressure gauge remains at 0 bar abnormal"),
+                ("Grouphead NTC Reads 52k Ohms Normal", "Grouphead temperature sensor measured 52k Ohms at 25C, wire harness undamaged normal")
+            ]
+
+        p_btn1, p_btn2, p_btn3 = st.columns(3)
+        with p_btn1:
+            if st.button(presets[0][0], use_container_width=True):
+                st.session_state.chat_history.append({"role": "USER", "content": presets[0][1], "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
+                r = query_diagnostic_engine(presets[0][1])
+                st.session_state.diagnostic_status = r.get("status", st.session_state.diagnostic_status)
+                st.session_state.resolution_confidence = r.get("confidence", st.session_state.resolution_confidence)
+                if r.get("escalation_record"):
+                    st.session_state.escalation_record = r["escalation_record"]
+                st.session_state.chat_history.append({"role": "SYSTEM", "content": r.get("message", ""), "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
+                st.rerun()
+
+        with p_btn2:
+            if st.button(presets[1][0], use_container_width=True):
+                st.session_state.chat_history.append({"role": "USER", "content": presets[1][1], "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
+                r = query_diagnostic_engine(presets[1][1])
+                st.session_state.diagnostic_status = r.get("status", st.session_state.diagnostic_status)
+                st.session_state.resolution_confidence = r.get("confidence", st.session_state.resolution_confidence)
+                if r.get("escalation_record"):
+                    st.session_state.escalation_record = r["escalation_record"]
+                st.session_state.chat_history.append({"role": "SYSTEM", "content": r.get("message", ""), "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
+                st.rerun()
+
+        with p_btn3:
+            if st.button(presets[2][0], use_container_width=True):
+                st.session_state.chat_history.append({"role": "USER", "content": presets[2][1], "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
+                r = query_diagnostic_engine(presets[2][1])
+                st.session_state.diagnostic_status = r.get("status", st.session_state.diagnostic_status)
+                st.session_state.resolution_confidence = r.get("confidence", st.session_state.resolution_confidence)
+                if r.get("escalation_record"):
+                    st.session_state.escalation_record = r["escalation_record"]
+                st.session_state.chat_history.append({"role": "SYSTEM", "content": r.get("message", ""), "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S")})
+                st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        st.markdown(
+            """
+            <div class="ui-card" style="text-align: center; padding: 22px;">
+                <div style="font-weight: 700; color: #1E3A8A; font-size: 0.95rem; margin-bottom: 4px;">Diagnostic Procedure Completed</div>
+                <div style="font-size: 0.82rem; color: #6B7280;">To troubleshoot another issue or equipment asset, select a new appliance above or click <strong>Start New Diagnosis</strong>.</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+
+# ----------------------------------------------------------------------------
+# Right Column: Progress & Resolution Overview
+# ----------------------------------------------------------------------------
+with col_sidebar:
+
+    # 1. Resolution Progress Card
+    conf_value = st.session_state.resolution_confidence
+    if st.session_state.diagnostic_status == "RESOLVED":
+        status_label = "Fault Resolved"
+        status_badge_cls = "badge-soft-green"
+    elif st.session_state.diagnostic_status in ("MANDATORY_HALT_TECHNICIAN_REQUIRED", "ESCALATED"):
+        status_label = "Safety Dispatch Required"
+        status_badge_cls = "badge-soft-red"
+    elif conf_value > 50:
+        status_label = "Verifying Fix"
+        status_badge_cls = "badge-soft-blue"
+    else:
+        status_label = "Analyzing Symptoms"
+        status_badge_cls = "badge-soft-amber"
+
+    st.markdown(
+        f"""
+        <div class="ui-card">
+            <div class="ui-card-header">
+                <div class="ui-card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Resolution Overview
+                </div>
+                <span class="{status_badge_cls}">{status_label}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+                <div class="progress-number-display">{conf_value}%</div>
+                <div class="progress-label-text">Confidence Rating</div>
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
+    # Native Streamlit Progress Bar
+    st.progress(conf_value / 100.0)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # 2. Compatibility Verification Card
+    st.markdown(
+        f"""
+        <div class="ui-card">
+            <div class="ui-card-header">
+                <div class="ui-card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    Compatibility Checks
+                </div>
+                <span class="badge-soft-green">Verified</span>
+            </div>
+            <div class="verify-row">
+                <div class="verify-label">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Model Matched
+                </div>
+                <span class="verify-status" style="color: #059669;">{active_model_id}</span>
+            </div>
+            <div class="verify-row">
+                <div class="verify-label">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Manual Verified
+                </div>
+                <span class="verify-status" style="color: #059669;">OEM Indexed</span>
+            </div>
+            <div class="verify-row">
+                <div class="verify-label">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{'#DC2626' if is_safety_halt else '#059669'}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Safety Clearance
+                </div>
+                <span class="verify-status" style="color: {'#DC2626' if is_safety_halt else '#059669'};">
+                    {'Tech Escalated' if is_safety_halt else 'Operator Safe'}
+                </span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 3. Action History (Evidence Timeline)
+    st.markdown(
+        """
+        <div class="ui-card">
+            <div class="ui-card-header">
+                <div class="ui-card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                    Action History
+                </div>
+                <span class="badge-soft-blue">Evidence Trail</span>
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    timeline_items = current_session.timeline
+
+    if not timeline_items:
+        st.markdown(
+            """
+            <div style="background-color: #F9FAFB; border: 1px dashed #E5E7EB; border-radius: 6px; padding: 18px 12px; text-align: center; color: #6B7280; font-size: 0.82rem;">
+                No action steps completed yet.<br/>
+                <span style="font-size: 0.75rem; color: #9CA3AF;">Observations will be logged chronologically here.</span>
             </div>
             """,
             unsafe_allow_html=True
         )
     else:
-        st.markdown("<div class='timeline-container'>", unsafe_allow_html=True)
-        for s in timeline_steps:
-            if s.verification_status == "VERIFIED_NORMAL":
-                s_badge = "badge-emerald"
-                border_color = "#10B981"
-            elif s.verification_status == "VERIFIED_ABNORMAL":
-                s_badge = "badge-crimson"
-                border_color = "#EF4444"
-            elif s.verification_status == "BLOCKED":
-                s_badge = "badge-crimson"
-                border_color = "#EF4444"
+        st.markdown("<div class='timeline-feed'>", unsafe_allow_html=True)
+        for item in timeline_items:
+            v_stat = item.verification_status
+            if v_stat == "VERIFIED_NORMAL":
+                badge_c = "badge-soft-green"
+                status_label = "Resolved / Normal"
+            elif v_stat in ("VERIFIED_ABNORMAL", "BLOCKED"):
+                badge_c = "badge-soft-red"
+                status_label = "Abnormal Reading"
             else:
-                s_badge = "badge-amber"
-                border_color = "#F59E0B"
+                badge_c = "badge-soft-amber"
+                status_label = "In Progress"
+
+            tl_title, _ = get_step_title_and_instructions(item.action_executed)
+            obs_clean = item.user_reported_observation
+            if len(obs_clean) > 85:
+                words = obs_clean.split()
+                short = []
+                for w in words:
+                    if len(" ".join(short + [w])) <= 80:
+                        short.append(w)
+                    else:
+                        break
+                obs_clean = " ".join(short) + "..."
 
             st.markdown(
                 f"""
-                <div class="timeline-entry" style="border-left: 3px solid {border_color};">
-                    <div class="timeline-entry-header">
-                        <span style="color: #94A3B8; font-weight: 700;">STEP {s.step_index:02d} // {s.timestamp[11:19]} UTC</span>
-                        <span class="badge-subsystem {s_badge}">{s.verification_status}</span>
+                <div class="timeline-item-card">
+                    <div class="timeline-item-header">
+                        <span style="font-weight: 600; color: #1E3A8A;">Step {item.step_index}</span>
+                        <span class="{badge_c}">{status_label}</span>
                     </div>
-                    <div style="color: #E2E8F0; margin-bottom: 3px;"><strong style="color: #94A3B8;">DIRECTIVE:</strong> {s.action_executed[:50]}...</div>
-                    <div style="color: #38BDF8;"><strong style="color: #94A3B8;">OBSERVED:</strong> {s.user_reported_observation[:55]}...</div>
+                    <div style="color: #1F2937; font-weight: 600; font-size: 0.86rem; margin-bottom: 3px;">{tl_title}</div>
+                    <div style="color: #4B5563; font-size: 0.78rem; line-height: 1.4;"><strong>Observed:</strong> {obs_clean}</div>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -1254,74 +1444,80 @@ with col_right:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 4. Formal Incident Record Export Controls Deck
+    # 4. Export & Escalation Actions Deck
     st.markdown(
         """
-        <div class="modern-card">
-            <div class="card-header-bar">
-                <div class="card-header-title">
-                    <span>INCIDENT EXPORT & ITSM DISPATCH</span>
+        <div class="ui-card">
+            <div class="ui-card-header">
+                <div class="ui-card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Export & Escalation
                 </div>
-                <div class="card-header-tag">CERTIFIED RECORD</div>
+                <span class="badge-soft-blue">Service Reports</span>
             </div>
         """,
         unsafe_allow_html=True
     )
 
     if not st.session_state.escalation_record:
-        if st.button("PREPARE FORMAL INCIDENT RECORD", use_container_width=True, help="Compiles the immutable evidence audit trail, required spare parts, and safety directives into a formal Tier-3 incident package."):
-            pkg = ResolutionReviewAgent.generate_escalation_package(
-                current_session,
-                reason="Manual operator audit export requested from industrial console."
+        if st.button("Generate Service Ticket Package", use_container_width=True):
+            esc_resp = call_backend_or_direct(
+                f"/api/escalate/{st.session_state.session_id}",
+                method="POST"
             )
-            st.session_state.escalation_record = pkg
+            esc_pkg = esc_resp.get("escalation_package") or esc_resp
+            st.session_state.escalation_record = esc_pkg
+            st.session_state.incident_exported = esc_pkg
             st.rerun()
 
     if st.session_state.escalation_record:
         esc_data = st.session_state.escalation_record
-        json_payload = json.dumps(esc_data, indent=2)
+        json_content = json.dumps(esc_data, indent=2)
 
-        md_payload = f"""# Enterprise Incident Escalation Record
-- Incident ID: {esc_data.get('incident_id')}
-- Timestamp: {esc_data.get('generated_timestamp')}
-- Target Model: {esc_data.get('device_metadata', {}).get('model_id')}
-- Firmware Revision: {esc_data.get('device_metadata', {}).get('firmware_version')}
-- Error Code: {esc_data.get('device_metadata', {}).get('error_code')}
-- Classification: {esc_data.get('escalation_classification')}
-- Escalation Reason: {esc_data.get('escalation_reason')}
-- Resolution Confidence: {esc_data.get('resolution_confidence_at_escalation')}
+        md_content = f"""# Appliance Service Diagnostic Incident Report
+- **Incident Reference:** {esc_data.get('incident_id')}
+- **Timestamp:** {esc_data.get('generated_timestamp')}
+- **Target Appliance:** {esc_data.get('equipment_telemetry', {}).get('model_name')} ({esc_data.get('equipment_telemetry', {}).get('model_id')})
+- **Board / Firmware:** {esc_data.get('equipment_telemetry', {}).get('firmware_version')}
+- **Diagnostic Code:** {esc_data.get('equipment_telemetry', {}).get('error_code')}
+- **Classification:** {esc_data.get('escalation_classification')}
+- **Escalation Reason:** {esc_data.get('escalation_reason')}
+- **Final Confidence:** {esc_data.get('resolution_confidence_at_escalation')}
 
-## Immutable Diagnostic Evidence Audit Log
+## Chronological Action History
 """
-        for item in esc_data.get("immutable_evidence_log", []):
-            md_payload += f"- Step {item['step']:02d}: {item['action']} -> Status: {item['status']} ({item['observation']})\n"
+        for t_entry in esc_data.get("immutable_evidence_log", []):
+            s_step = t_entry.get("step", "-")
+            s_act = t_entry.get("action", "Diagnostic Step")
+            s_stat = t_entry.get("status") or t_entry.get("verification_status", "LOGGED")
+            s_obs = t_entry.get("observation", "")
+            s_time = t_entry.get("timestamp", "")
+            md_content += f"- Step {s_step}: {s_act} -> [{s_stat}] '{s_obs}' ({s_time})\n"
 
-        md_payload += "\n## Required Field Spares\n"
-        for spare in esc_data.get("required_field_spares", []):
-            md_payload += f"- {spare}\n"
+        md_content += "\n## Recommended OEM Service Spares\n"
+        for spare in esc_data.get("recommended_oem_spares", []):
+            md_content += f"- {spare}\n"
 
-        md_payload += "\n## Mandatory Safety Directives\n"
+        md_content += "\n## Mandatory Safety Directives\n"
         for s_dir in esc_data.get("mandatory_safety_directives", []):
-            md_payload += f"- {s_dir}\n"
+            md_content += f"- {s_dir}\n"
 
-        dl_col1, dl_col2 = st.columns(2)
-        with dl_col1:
+        e_col1, e_col2 = st.columns(2)
+        with e_col1:
             st.download_button(
-                label="[JSON EXPORT]",
-                data=json_payload,
-                file_name=f"{esc_data.get('incident_id', 'INC')}_ESCALATION_RECORD.json",
+                label="Download Ticket (JSON)",
+                data=json_content,
+                file_name=f"service_ticket_{st.session_state.session_id}.json",
                 mime="application/json",
-                use_container_width=True,
-                help="Exports the machine-readable escalation JSON payload for enterprise ITSM ticketing systems (ServiceNow/Jira)."
+                use_container_width=True
             )
-        with dl_col2:
+        with e_col2:
             st.download_button(
-                label="[MARKDOWN REPORT]",
-                data=md_payload,
-                file_name=f"{esc_data.get('incident_id', 'INC')}_AUDIT_REPORT.md",
+                label="Export Summary (Markdown)",
+                data=md_content,
+                file_name=f"diagnostic_summary_{st.session_state.session_id}.md",
                 mime="text/markdown",
-                use_container_width=True,
-                help="Exports a formatted human-readable incident audit log in Markdown format."
+                use_container_width=True
             )
 
     st.markdown("</div>", unsafe_allow_html=True)

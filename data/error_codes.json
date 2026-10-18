@@ -1,189 +1,215 @@
 {
-  "OPT-001": {
-    "code": "OPT-001",
-    "model": "Apex Router Pro-X",
-    "subsystem": "WAN Optical Interface",
-    "symptom": "Optical Transceiver Signal Loss / Rx Power Below Threshold (-24.0 dBm)",
-    "description": "The primary SFP28 WAN interface indicates severe optical carrier attenuation. Rx optical power has dropped below -24.0 dBm operating limit.",
+  "E15": {
+    "code": "E15",
+    "model_id": "BOSCH_SHEM78",
+    "subsystem": "Hydraulic",
+    "description": "Base trough flood float switch triggered. Water detected in base pan activating safety microswitch and running drain pump continuously.",
     "severity": "CRITICAL",
-    "requires_authorized_technician": false,
-    "technician_authorization_boundary": "Level 1 operator may clean optical connectors and verify patch panel mating. Transceiver replacement inside energized chassis requires Certified Field Technician.",
-    "initial_isolation_checks": [
-      "Inspect patch cord LC connector mating and verify latch engagement.",
-      "Check optical Tx/Rx polarity orientation on transceiver port 1.",
-      "Execute CLI command 'show interfaces wan0 optical-diagnostics' to read Rx power levels.",
-      "Inspect optical dust caps and clean LC ferrule using standard lint-free fiber cassette cleaner."
-    ],
-    "applicable_firmware": ">=v4.0.0"
+    "requires_technician": false,
+    "citation": "BOSCH_SHEM78_SM_SEC4.1",
+    "initial_steps": [
+      "Disconnect 120V/240V mains branch circuit breaker immediately to halt continuous drain pump overrun.",
+      "Turn off under-sink water supply shutoff stopcock feeding the dishwasher braided supply line.",
+      "Remove lower toe-kick access cover panel and visually inspect base pan sump trough for standing water.",
+      "Sponge, syphon, or wet-vacuum accumulated moisture from the base pan to allow the styrofoam float disc to reset down.",
+      "Inspect sump perimeter O-ring gasket, water inlet valve solenoid seal, and circulation pump housing for weep traces."
+    ]
   },
-  "ERR-ARPX-101": {
-    "code": "ERR-ARPX-101",
-    "model": "Apex Router Pro-X",
-    "subsystem": "WAN Optical Interface",
-    "symptom": "WAN Optical Transceiver Signal Loss (Rx Loss of Signal / LOS asserted)",
-    "description": "The primary SFP28 WAN interface indicates loss of optical carrier signal. Optical Rx power drops below -24 dBm threshold.",
-    "severity": "CRITICAL",
-    "requires_authorized_technician": false,
-    "technician_authorization_boundary": "Level 1 operator may clean optical connectors and verify patch panel patching. Chassis opening or optical transceiver replacement inside hot enclosure requires Certified Field Technician.",
-    "initial_isolation_checks": [
-      "Inspect patch cord LC connector mating and verify latch engagement.",
-      "Check optical Tx/Rx polarity orientation on transceiver port 1.",
-      "Execute CLI command 'show interfaces wan0 optical-diagnostics' to read Rx power levels.",
-      "Inspect optical dust caps and clean LC ferrule using standard lint-free fiber cassette cleaner."
-    ],
-    "applicable_firmware": ">=v4.2.0"
-  },
-  "ERR-ARPX-204": {
-    "code": "ERR-ARPX-204",
-    "model": "Apex Router Pro-X",
-    "subsystem": "Routing Engine & Control Plane",
-    "symptom": "BGP Peer Session Flapping / Route Convergence Exhaustion",
-    "description": "External BGP session resets cyclically due to TCP hold timer expiry or prefix limit exceeding allocated TCAM capacity.",
+  "E24": {
+    "code": "E24",
+    "model_id": "BOSCH_SHEM78",
+    "subsystem": "Drainage",
+    "description": "Drain pump sequence timeout or drain circuit flow restriction detected during cycle initiation.",
     "severity": "HIGH",
-    "requires_authorized_technician": false,
-    "technician_authorization_boundary": "Operator can adjust prefix limits and soft-reset peering via management plane. Core routing engine firmware flashing requires Tier-3 Network Architect authorization.",
-    "initial_isolation_checks": [
-      "Check BGP neighbor state using 'show ip bgp summary' and review hold time negotiations.",
-      "Inspect CPU utilization on Control Processor Core 0 via 'show system resources'.",
-      "Verify MTU configuration matches peer link standard (1500 vs 9000 bytes).",
-      "Inspect prefix filter list to confirm total inbound routes do not exceed 1,500,000 prefixes."
-    ],
-    "applicable_firmware": ">=v4.0.0"
+    "requires_technician": false,
+    "citation": "BOSCH_SHEM78_SM_SEC4.3",
+    "initial_steps": [
+      "Remove lower dish rack and rotate stainless steel microfilter cylinder counter-clockwise to lift out filter basket assembly.",
+      "Pry out white plastic drain pump impeller cover using Torx T20 screwdriver or integral pull tab.",
+      "Inspect BLDC drain pump impeller vanes for trapped debris such as glass shards, toothpicks, fruit seeds, or plastic ties.",
+      "Verify drain pump impeller spins with magnetic resistance (rotates in 90-degree tactile detents without dragging).",
+      "Inspect rubber non-return flapper check valve adjacent to impeller to confirm it is not stiffened, warped, or stuck closed."
+    ]
   },
-  "ERR-ARPX-310": {
-    "code": "ERR-ARPX-310",
-    "model": "Apex Router Pro-X",
-    "subsystem": "Thermal & Chassis Cooling",
-    "symptom": "High Internal Junction Thermal Warning (Junction Temp > 88 C)",
-    "description": "Central ASIC thermal sensor reports temperature exceeding safe operating threshold. Throttling protocol activated.",
-    "severity": "WARNING",
-    "requires_authorized_technician": false,
-    "technician_authorization_boundary": "External air inlet cleaning and ambient room temperature verification allowed for site operator. Internal chassis fan module replacement or heatsink repasting requires Authorized Field Technician.",
-    "initial_isolation_checks": [
-      "Check ambient server room rack intake temperature (must not exceed 25 C).",
-      "Inspect front and rear chassis air grilles for physical dust accumulation.",
-      "Run 'show system environment thermal' to compare sensor readings across zones 1 through 4.",
-      "Verify all 4 counter-rotating pulse-width modulated (PWM) fans report RPM above 6000."
-    ],
-    "applicable_firmware": "All Versions"
-  },
-  "ERR-ARPX-402": {
-    "code": "ERR-ARPX-402",
-    "model": "Apex Router Pro-X",
-    "subsystem": "Persistent Storage & Firmware NVRAM",
-    "symptom": "Non-Volatile Memory (NVRAM) Checksum Mismatch / Hardware Integrity Fault",
-    "description": "System integrity check failed on secondary flash partition during boot verification. Potential flash memory corruption.",
-    "severity": "CRITICAL",
-    "requires_authorized_technician": true,
-    "technician_authorization_boundary": "MANDATORY HALT: Physical flash module replacement or JTAG recovery requires Authorized Field Technician with ESD grounding kit and signed cryptographic recovery token.",
-    "initial_isolation_checks": [
-      "Record system serial number, active boot partition, and hardware revision.",
-      "Export crash dump log via 'system dump export tftp://<server>/dump.bin'.",
-      "Do NOT power cycle or restart chassis to prevent persistent boot-loop state.",
-      "Halt diagnostic procedure immediately and request emergency hardware technician dispatch."
-    ],
-    "applicable_firmware": "All Versions"
-  },
-  "ERR-ARPX-505": {
-    "code": "ERR-ARPX-505",
-    "model": "Apex Router Pro-X",
-    "subsystem": "Power Distribution & Redundant PSU",
-    "symptom": "Dual Redundant Power Supply (PSU-2) Phase Loss or Voltage Sag",
-    "description": "Secondary power module input voltage measured below 90 VAC or 0 VDC. Redundant power topology compromised.",
+  "E25": {
+    "code": "E25",
+    "model_id": "BOSCH_SHEM78",
+    "subsystem": "Drainage",
+    "description": "Drain pump impeller blocked or drain pump cover missing, unseated, or locked detent disengaged.",
     "severity": "HIGH",
-    "requires_authorized_technician": false,
-    "technician_authorization_boundary": "Operator can inspect AC cord seating and PDU breaker state. Hot-swap replacement of PSU module requires Authorized Field Technician if input source breaker cannot be isolated.",
-    "initial_isolation_checks": [
-      "Verify C14 power cable is fully latched into PSU-2 rear receptacle.",
-      "Inspect rack PDU branch circuit breaker feeding PSU-2 feed line B.",
-      "Verify front LED panel status: PSU-1 (Solid Green), PSU-2 (Flashing Amber or Off).",
-      "Execute 'show system power' to view input voltage, output wattage, and thermal readings on PSU-2."
-    ],
-    "applicable_firmware": ">=v3.8.0"
+    "requires_technician": false,
+    "citation": "BOSCH_SHEM78_SM_SEC4.4",
+    "initial_steps": [
+      "Verify white plastic drain pump impeller cover is firmly snapped into place with audible mechanical detent engagement.",
+      "Inspect drain hose routing under kitchen sink for kinks, crushing against cabinet backboard, or missing high drain loop (minimum 32-inch elevation).",
+      "Inspect kitchen garbage disposal drain inlet barb to verify knockout plug was removed during installation.",
+      "Measure drain pump motor winding resistance across terminal pins with digital multimeter (nominal 85 to 105 Ohms).",
+      "MANDATORY HALT: If impeller motor winding shows open circuit or shorted coil, disconnect power and dispatch Authorized Field Technician for BLDC drain pump replacement."
+    ]
   },
-  "ERR-CS4K-108": {
-    "code": "ERR-CS4K-108",
-    "model": "CoreSwitch 4000",
-    "subsystem": "Packet Switching Fabric & Buffer Engine",
-    "symptom": "ASIC Packet Buffer Allocation Exhaustion / Ingress Drops",
-    "description": "Shared ingress packet buffer pool occupancy reached 99.2%. Tail drops observed on priority queues 4 through 7.",
+  "E27": {
+    "code": "E27",
+    "model_id": "BOSCH_SHEM78",
+    "subsystem": "Inverter",
+    "description": "Line voltage drop below threshold (< 98V AC) under flow-through water heater or heat pump load.",
     "severity": "HIGH",
-    "requires_authorized_technician": false,
-    "technician_authorization_boundary": "Software QoS tuning and microburst profile adjustment allowed for network operators. Buffer memory hardware testing requires vendor escalation.",
-    "initial_isolation_checks": [
-      "Inspect queue drop counters via 'show interfaces priority-queue counters'.",
-      "Check for microburst traffic patterns on 100GbE uplink trunks.",
-      "Verify Explicit Congestion Notification (ECN) and Priority Flow Control (PFC) parameters.",
-      "Enable dynamic buffer profile: 'config qos buffer-profile dynamic-auto'."
-    ],
-    "applicable_firmware": ">=v5.1.0"
+    "requires_technician": false,
+    "citation": "BOSCH_SHEM78_SM_SEC4.8",
+    "initial_steps": [
+      "Measure AC line voltage at wall receptacle using calibrated True-RMS multimeter under resting state (nominal 120V AC +/- 10%).",
+      "Verify dishwasher is hardwired on dedicated 15A/20A branch circuit and not daisy-chained through downstream GFCI outlets or extension cords.",
+      "Inspect rear metal power junction box behind toe-kick panel for loose wire nuts, terminal screw oxidation, or thermal scorching.",
+      "Monitor line voltage drop when heater relay energizes; if supply dips below 98V AC, contact certified facility electrician to resolve supply feed impedance."
+    ]
   },
-  "ERR-CS4K-215": {
-    "code": "ERR-CS4K-215",
-    "model": "CoreSwitch 4000",
-    "subsystem": "Chassis Interconnect & High-Speed Backplane",
-    "symptom": "Backplane Fabric Bus CRC Error Rate Exceeds 10^-5 Threshold",
-    "description": "High serial bit error rates detected across SerDes lanes connecting Line Card 2 to Central Crossbar Switch Module.",
+  "F06 E01": {
+    "code": "F06 E01",
+    "model_id": "WHIRLPOOL_WASHER_ALPHA",
+    "subsystem": "Inverter",
+    "description": "Drive motor tachometer failure. ACU/MCU detects no rotational tachometer feedback pulses from 3-phase induction or PMSM motor during active drive command.",
+    "severity": "HIGH",
+    "requires_technician": false,
+    "citation": "WHIRLPOOL_W11663204_REV_B_SEC5.2",
+    "initial_steps": [
+      "Disconnect AC line power cord and wait 3 minutes for MCU inverter bus capacitors to safely bleed down below 50V DC.",
+      "Enter Service Diagnostic Mode on console by selecting any 3 keys and pressing in sequence: 1-2-3, 1-2-3, 1-2-3 within 8 seconds.",
+      "Inspect 3-wire tachometer wiring harness between MCU connector J9 and motor endbell sensor connector for pinched or broken leads.",
+      "Rotate inner stainless wash basket manually by hand to verify smooth drum spin without mechanical bearing binding or foreign object friction.",
+      "Measure tachometer coil resistance across pins 1 and 2 of the motor harness connector (nominal 115 to 130 Ohms at 20 C / 68 F).",
+      "MANDATORY HALT: Direct drive stator winding continuity check or motor control inverter replacement requires Authorized Field Technician."
+    ]
+  },
+  "F03 E01": {
+    "code": "F03 E01",
+    "model_id": "WHIRLPOOL_WASHER_ALPHA",
+    "subsystem": "Hydraulic",
+    "description": "Analog Pressure Sensor (APS) fault or pressure signal frequency out of valid operating range (< 20 kHz or > 46 kHz).",
+    "severity": "HIGH",
+    "requires_technician": false,
+    "citation": "WHIRLPOOL_W11663204_REV_B_SEC5.1",
+    "initial_steps": [
+      "Disconnect AC line power cord from wall outlet.",
+      "Remove top console / cabinet lid to access the Analog Pressure Sensor mounted on the upper chassis side rail.",
+      "Inspect translucent vinyl air pressure tube connecting pressure transducer to lower tub sump air bell dome.",
+      "Check vinyl pressure tube for kinks, pinching, punctures, condensation blockages, or detergent residue cakes.",
+      "Disconnect vinyl tube at sensor nipple, blow gently down the tube toward tub sump to clear any debris, and verify clear airway.",
+      "Verify ACU connector J3 harness seating and inspect DC supply voltage (nominal 5.0 VDC between pins 1 and 3)."
+    ]
+  },
+  "F08 E01": {
+    "code": "F08 E01",
+    "model_id": "WHIRLPOOL_WASHER_ALPHA",
+    "subsystem": "Thermal",
+    "description": "Wash water heater drive circuit failure or heating element open circuit detected during sanitary or steam cycle.",
+    "severity": "HIGH",
+    "requires_technician": true,
+    "citation": "WHIRLPOOL_W11663204_REV_B_SEC5.4",
+    "initial_steps": [
+      "Disconnect AC line power cord; remove rear service access panel to expose heating element terminals at tub base.",
+      "Discharge electrostatic potential and inspect heating element terminals and harness wiring for thermal discoloration or loose slip-on spades.",
+      "Measure resistance across heating element terminals with digital multimeter (nominal 12 to 18 Ohms for 120V element; open circuit confirms element failure).",
+      "Measure insulation resistance from either heater terminal to tub chassis metal ground (must read greater than 10 Megohms).",
+      "MANDATORY HALT: Replacing failed tubular wash heating element or ACU heater drive relay requires Authorized Field Technician."
+    ]
+  },
+  "BLNK-5": {
+    "code": "BLNK-5",
+    "model_id": "LG_REFRIG_LFXS",
+    "subsystem": "Inverter",
+    "description": "Inverter Linear Compressor locked rotor detection (5 LED blinks on Main Inverter PCB). Compressor fails to reciprocate due to piston seizure or drive circuit phase loss.",
     "severity": "CRITICAL",
-    "requires_authorized_technician": true,
-    "technician_authorization_boundary": "MANDATORY HALT: Physical line card reseat, alignment pin inspection, and backplane trace diagnostics require Authorized Field Technician with calibrated torque screwdriver and ESD protection.",
-    "initial_isolation_checks": [
-      "Execute 'show fabric backplane errors linecard 2' to capture lane-by-lane bit error rates.",
-      "Isolate Line Card 2 traffic by shifting routing metrics to redundant card 1.",
-      "Do NOT unlatch or reseat line card during active production traffic.",
-      "Generate backplane diagnostic package and dispatch Tier-3 hardware field engineer."
-    ],
-    "applicable_firmware": "All Versions"
+    "requires_technician": true,
+    "citation": "LG_LFXS_SERVICEMAN_SEC6.2",
+    "initial_steps": [
+      "Disconnect AC power cord and observe mandatory 3-minute PCB capacitor bleed-down delay before removing rear machine compartment cover.",
+      "Locate the red diagnostic LED on the Main Inverter PCB; verify blink cadence (5 rapid 0.5-second flashes followed by 2-second pause).",
+      "Remove compressor 3-pin lead terminal cover and inspect connector pins for heat damage, burning, or carbonization.",
+      "Measure linear compressor stator coil resistance across compressor terminal pins U and V (nominal 6.0 to 11.0 Ohms).",
+      "Measure insulation resistance from terminal pins to compressor shell ground (must exceed 5 Megohms).",
+      "MANDATORY HALT: Linear compressor sealed system repair involves flammable R600a Isobutane refrigerant isolation and torch/flameless lokring brazing. Requires EPA Universal Certified Field Technician."
+    ]
   },
-  "ERR-CS4K-330": {
-    "code": "ERR-CS4K-330",
-    "model": "CoreSwitch 4000",
-    "subsystem": "Power over Ethernet (PoE+) Controller",
-    "symptom": "PoE+ Power Budget Overdraft on Line Card 3 (Exceeds 740W Limit)",
-    "description": "Total requested PoE power on 48-port Line Card 3 exceeds internal transformer thermal rating. Ports entering safety cutoff.",
+  "BLNK-6": {
+    "code": "BLNK-6",
+    "model_id": "LG_REFRIG_LFXS",
+    "subsystem": "Inverter",
+    "description": "Compressor drive current trip or IPM (Intelligent Power Module) overcurrent protection engaged (6 LED blinks on Main Inverter PCB).",
+    "severity": "CRITICAL",
+    "requires_technician": true,
+    "citation": "LG_LFXS_SERVICEMAN_SEC6.3",
+    "initial_steps": [
+      "Disconnect refrigerator AC power cord and observe 3-minute PCB bleed-down delay before servicing rear electrical compartment.",
+      "Inspect rear machine compartment condenser fan motor assembly; verify fan blade spins freely without debris or wire harness fouling.",
+      "Clean wire condenser heat exchanger matrix using high-velocity vacuum brush to remove heavy lint accumulation.",
+      "Check Main Inverter PCB IPM aluminum heat sink mounting screws for thermal paste dry-out or loose mechanical torque.",
+      "Inspect compressor discharge line temperature to ensure thermal overload protector has not permanently tripped open.",
+      "MANDATORY HALT: Inverter drive board replacement, IPM power bridge testing, or shorted linear compressor stator replacement requires Authorized Field Technician."
+    ]
+  },
+  "DH-ERR": {
+    "code": "DH-ERR",
+    "model_id": "LG_REFRIG_LFXS",
+    "subsystem": "Thermal",
+    "description": "Defrost heater cycle timeout. Evaporator defrost sensor fails to reach defrost termination threshold temperature (8 C / 46 F) within 80 minutes of heater activation.",
+    "severity": "HIGH",
+    "requires_technician": false,
+    "citation": "LG_LFXS_SERVICEMAN_SEC6.7",
+    "initial_steps": [
+      "Inspect rear evaporator cover wall inside freezer compartment for heavy frost blanket, ice bulging, or airflow duct choking.",
+      "Initiate Forced Defrost mode from front dispenser panel by holding 'Refrigerator' and 'Ice Plus' keys simultaneously for 3 seconds.",
+      "Disconnect AC line power cord; remove freezer back wall panel to expose aluminum defrost sheath heater.",
+      "Measure defrost sheath heater resistance across harness connector pins (nominal 80 to 120 Ohms; open indicates broken heater element).",
+      "Test defrost bimetal safety thermostat / thermal fuse continuity (must read 0 Ohms closed at freezing temperature; infinite indicates tripped safety fuse).",
+      "Measure defrost NTC temperature sensor resistance (nominal 30k Ohms at 0 C / 32 F; 10k Ohms at 25 C / 77 F)."
+    ]
+  },
+  "Er01": {
+    "code": "Er01",
+    "model_id": "BREVILLE_BES920",
+    "subsystem": "Hydraulic",
+    "description": "Steam boiler water fill timeout. Conductive water level sensor probe fails to detect water level continuity within 90 seconds of fill solenoid engagement.",
+    "severity": "HIGH",
+    "requires_technician": false,
+    "citation": "BREVILLE_BES920XL_SM_SEC3.1",
+    "initial_steps": [
+      "Verify rear water reservoir is filled with filtered water and magnetic float in reservoir channel floats freely to top of travel.",
+      "Inspect water reservoir mesh intake valve and silicone duckbill gasket in machine floor for calcium scale obstruction or displacement.",
+      "Power off machine, unplug from 120V/240V AC supply, and verify both rear boiler manual brass ball drain valves are turned fully horizontal (closed).",
+      "Inspect conductive water level probe harness wire on top of steam boiler; verify faston spade connector is tight and free of green corrosion.",
+      "Listen for ULKA vibratory fill pump operation during startup cycle; if pump hums without priming, perform manual suction prime via water intake port."
+    ]
+  },
+  "Er02": {
+    "code": "Er02",
+    "model_id": "BREVILLE_BES920",
+    "subsystem": "Thermal",
+    "description": "Grouphead thermal runaway error. Grouphead collar NTC temperature sensor reads greater than 105 C (221 F) for more than 5 consecutive seconds.",
+    "severity": "CRITICAL",
+    "requires_technician": true,
+    "citation": "BREVILLE_BES920XL_SM_SEC3.2",
+    "initial_steps": [
+      "Unplug machine power cord from wall receptacle immediately to prevent thermal fuse blow and steam boiler overpressure.",
+      "Allow espresso machine to cool down completely to ambient room temperature (minimum 45 minutes).",
+      "Remove top chassis lid (6 Torx T10 screws) while observing mandatory 15-bar pressurized steam boiler scalding warning.",
+      "Inspect grouphead cartridge heating element wiring and NTC thermistor leads for insulation chafe, silicone sheath splits, or shorting to brass collar.",
+      "Measure grouphead NTC thermistor resistance at 25 C / 77 F (nominal 50k Ohms across pins).",
+      "MANDATORY HALT: Grouphead solid-state relay (SSR) triac breakdown, power PCB short, or cartridge heater replacement requires Authorized Field Technician."
+    ]
+  },
+  "Er03": {
+    "code": "Er03",
+    "model_id": "BREVILLE_BES920",
+    "subsystem": "Thermal",
+    "description": "Steam boiler NTC thermistor sensor open circuit or disconnected sensor harness detected during power-on self-test.",
     "severity": "MEDIUM",
-    "requires_authorized_technician": false,
-    "technician_authorization_boundary": "Site administrator can re-assign port priorities (Critical, High, Low) and disable unused PoE ports via software.",
-    "initial_isolation_checks": [
-      "Execute 'show power inline linecard 3' to audit consumption per port.",
-      "Identify Class 4 and Class 6 high-draw PoE endpoints (PTZ cameras, high-power APs).",
-      "Reconfigure non-critical ports to low priority to prevent line card global cutoff.",
-      "Audit building cabling runs to verify resistance losses do not exceed 12.5 ohms per loop."
-    ],
-    "applicable_firmware": ">=v5.0.0"
-  },
-  "ERR-CS4K-412": {
-    "code": "ERR-CS4K-412",
-    "model": "CoreSwitch 4000",
-    "subsystem": "Chassis Cooling & Modular Fan Tray",
-    "symptom": "Fan Tray 2 Tachometer Signal Loss / Rotor Lock Alert",
-    "description": "Hall effect sensor on Fan Tray 2 reports 0 RPM for Fan Units 3 and 4. Chassis operates on N+1 emergency cooling profile.",
-    "severity": "HIGH",
-    "requires_authorized_technician": true,
-    "technician_authorization_boundary": "MANDATORY HALT: Modular fan tray extraction and replacement while chassis is energized requires Authorized Field Technician to adhere to hot-swap safety clearance limits (maximum 180 seconds extraction window).",
-    "initial_isolation_checks": [
-      "Check chassis environment telemetry via 'show environment fan'.",
-      "Inspect Fan Tray 2 physical status LED on rear chassis panel (Red indicates rotor lock).",
-      "Verify adjacent fan trays 1 and 3 are compensating at 100% full speed.",
-      "Prepare hot-swap replacement fan tray (FRU-CS4K-FAN-R) and halt for certified technician."
-    ],
-    "applicable_firmware": "All Versions"
-  },
-  "ERR-CS4K-520": {
-    "code": "ERR-CS4K-520",
-    "model": "CoreSwitch 4000",
-    "subsystem": "Hardware Security Module (HSM) & Trust Boundary",
-    "symptom": "Cryptographic HSM Tamper Alert / Secure Enclave Locked",
-    "description": "Physical tamper detection circuit triggered on motherboard crypto coprocessor. Encryption keys zeroized as defensive measure.",
-    "severity": "CRITICAL",
-    "requires_authorized_technician": true,
-    "technician_authorization_boundary": "MANDATORY HALT: Physical inspection, cryptoprocessor re-commissioning, and key vault re-provisioning require Authorized Security Field Engineer with dual-custody authorization keys.",
-    "initial_isolation_checks": [
-      "Document physical chassis seals on top cover and rack security brackets.",
-      "Review management console audit log for unexpected chassis intrusion sensor triggers.",
-      "Do NOT attempt firmware overwrite or hardware reset.",
-      "Immediately escalate to Enterprise Security Operations and Certified Hardware Engineering."
-    ],
-    "applicable_firmware": "All Versions"
+    "requires_technician": false,
+    "citation": "BREVILLE_BES920XL_SM_SEC3.3",
+    "initial_steps": [
+      "Unplug espresso machine from AC power socket and ensure steam boiler pressure gauge reads 0 bar.",
+      "Remove top chassis lid and inspect 2-pin white Molex harness connector on Main Power Board labeled 'NTC-STM'.",
+      "Verify wiring harness from steam boiler sensor well to main board has not been pinched by internal chassis structural ribs.",
+      "Measure NTC thermistor resistance directly across sensor probe terminals (nominal 50k Ohms at 25 C / 77 F; infinite indicates open circuit).",
+      "MANDATORY HALT: Replacing threaded NTC thermistor sensor probe in high-pressure steam boiler vessel requires Authorized Field Technician with PTFE thread sealant."
+    ]
   }
 }
