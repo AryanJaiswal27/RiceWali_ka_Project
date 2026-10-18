@@ -7,7 +7,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 ERROR_CODES_PATH = DATA_DIR / "error_codes.json"
 MANUALS_PATH = DATA_DIR / "industrial_manuals.md"
+SERVICE_BULLETINS_PATH = DATA_DIR / "service_bulletins.json"
+KNOWN_ISSUES_PATH = DATA_DIR / "known_issues.json"
+ESCALATION_RULES_PATH = DATA_DIR / "escalation_rules.json"
+TEST_CASES_PATH = DATA_DIR / "test_cases.json"
+UPLOADS_DIR = DATA_DIR / "uploads"
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 VECTOR_STORE_DIR = BASE_DIR / "vector_store_data"
+
+# Multi-Criteria 3-Factor Re-Ranking Weights
+WEIGHT_SEMANTIC = 0.45
+WEIGHT_MODEL = 0.35
+WEIGHT_AUTHORITY = 0.20
+
+# Document Authority Ratings
+DOCUMENT_AUTHORITY_WEIGHTS = {
+    "escalation_rule": 1.00,
+    "service_bulletin": 0.92,
+    "known_issue": 0.76,
+    "product_manual": 0.60,
+}
+
+TOP_K = 3
+CANDIDATE_POOL = 10
 
 # Auto-load .env file if present
 ENV_PATH = BASE_DIR / ".env"

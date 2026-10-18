@@ -242,6 +242,48 @@ def get_code_metadata(code: str) -> dict[str, Any]:
     return result
 
 
+@app.get("/api/evaluate", tags=["Evaluation & Benchmarking"])
+def run_benchmark_endpoint() -> dict[str, Any]:
+    """
+    Executes automated 4-dimension quality evaluation benchmark suite (Hit Rate, Entity Extraction, Tools, Safety Invariants).
+    """
+    from src.evaluation import run_evaluation
+    return run_evaluation()
+
+
+@app.get("/api/status", tags=["System Status"])
+def get_system_status() -> dict[str, Any]:
+    """
+    Returns comprehensive system status, indexed document tiers, and active search mode.
+    """
+    from src.service import system_status
+    return system_status()
+
+
+@app.get("/api/documents", tags=["Diagnostics Data"])
+def get_document_catalog() -> dict[str, Any]:
+    """
+    Returns indexed document catalog categorized by authority tier with 3-factor weights.
+    """
+    from src.rag import get_knowledge_base
+    kb = get_knowledge_base()
+    return {
+        "total": len(kb.raw_chunks),
+        "documents": [
+            {
+                "id": c["id"],
+                "title": c["title"],
+                "doc_type": c.get("doc_type", "product_manual"),
+                "product": c["product"],
+                "authority_score": c.get("authority_score", 0.60),
+                "disruption_level": c.get("disruption_level", "Standard"),
+                "needs_technician": c.get("needs_technician", False),
+            }
+            for c in kb.raw_chunks
+        ]
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host=settings.api_host, port=settings.api_port)

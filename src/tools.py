@@ -7,14 +7,46 @@ from src.config import ERROR_CODES_PATH
 logger = logging.getLogger("ApplianceDiagnostics.Tools")
 
 
+_error_db_cache: Optional[dict[str, Any]] = None
+
+
 def _load_error_codes_db() -> dict[str, Any]:
     """
     Internal loader for structured error codes JSON database.
     """
-    if not ERROR_CODES_PATH.exists():
-        raise FileNotFoundError(f"Diagnostic error code database not found at: {ERROR_CODES_PATH}")
-    with open(ERROR_CODES_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+    global _error_db_cache
+    if _error_db_cache is None:
+        if not ERROR_CODES_PATH.exists():
+            raise FileNotFoundError(f"Diagnostic error code database not found at: {ERROR_CODES_PATH}")
+        with open(ERROR_CODES_PATH, "r", encoding="utf-8") as f:
+            _error_db_cache = json.load(f)
+    return _error_db_cache
+
+
+def load_error_db() -> dict[str, Any]:
+    """Public alias to load error code database dictionary."""
+    return _load_error_codes_db()
+
+
+def list_products() -> list[str]:
+    """All unique product names in the error database."""
+    db = load_error_db()
+    return sorted({record.get("model", record.get("model_id", "General")) for record in db.values()})
+
+
+def list_error_codes(product: Optional[str] = None) -> list[dict]:
+    """List of error codes, optionally filtered by product."""
+    db = load_error_db()
+    return [
+        {
+            "code": code,
+            "symptom": rec.get("symptom", rec.get("description", "")),
+            "severity": rec.get("severity", "MEDIUM"),
+            "model": rec.get("model", rec.get("model_id", "")),
+        }
+        for code, rec in db.items()
+        if product is None or rec.get("model") == product or rec.get("model_id") == product
+    ]
 
 
 def _normalize_code(code: str) -> str:
@@ -32,10 +64,13 @@ def lookup_error_code(code: str) -> dict[str, Any]:
         if not code or not isinstance(code, str) or not code.strip():
             return {
                 "status": "INVALID_INPUT",
+                "found": False,
                 "code": str(code),
+                "product": "UNKNOWN",
                 "model_id": "UNKNOWN",
                 "model": "UNKNOWN",
                 "subsystem": "GENERAL",
+                "symptom": "",
                 "description": "",
                 "severity": "LOW",
                 "requires_technician": False,
@@ -43,8 +78,10 @@ def lookup_error_code(code: str) -> dict[str, Any]:
                 "citation": "N/A",
                 "initial_steps": [],
                 "initial_isolation_checks": [],
+                "safety_boundary": "Parameter validation check.",
                 "technician_authorization_boundary": "Parameter validation check.",
-                "error_message": "Invalid error code supplied. Expected non-empty string."
+                "error_message": "Invalid error code supplied. Expected non-empty string.",
+                "message": "Invalid error code supplied."
             }
 
         raw_query = code.strip()
@@ -79,12 +116,14 @@ def lookup_error_code(code: str) -> dict[str, Any]:
                     break
 
         if matched_record:
-            req_tech = matched_record.get("requires_technician", False)
+            req_tech = matched_record.get("requires_authorized_technician", matched_record.get("requires_technician", False))
             steps = matched_record.get("initial_steps") or matched_record.get("initial_isolation_checks") or []
             citation = matched_record.get("citation", "MANUAL-REF-STANDARD")
             model_id = matched_record.get("model_id") or matched_record.get("model", "UNKNOWN")
+            prod = matched_record.get("model") or model_id
             subsystem = matched_record.get("subsystem", "GENERAL")
             desc = matched_record.get("description", "")
+            symptom = matched_record.get("symptom", desc)
             severity = matched_record.get("severity", "MEDIUM")
 
             tech_boundary = matched_record.get("technician_authorization_boundary")
@@ -96,10 +135,13 @@ def lookup_error_code(code: str) -> dict[str, Any]:
 
             return {
                 "status": "SUCCESS",
+                "found": True,
                 "code": matched_record.get("code", matched_key),
                 "model_id": model_id,
-                "model": model_id,
+                "model": prod,
+                "product": prod,
                 "subsystem": subsystem,
+                "symptom": symptom,
                 "description": desc,
                 "severity": severity,
                 "requires_technician": req_tech,
@@ -107,16 +149,24 @@ def lookup_error_code(code: str) -> dict[str, Any]:
                 "citation": citation,
                 "initial_steps": steps,
                 "initial_isolation_checks": steps,
+                "safety_boundary": tech_boundary,
                 "technician_authorization_boundary": tech_boundary,
+                "applicable_firmware": matched_record.get("applicable_firmware", "ANY"),
                 "error_message": None
             }
 
+        prefix = query_upper.split("-")[0] if "-" in query_upper else ""
+        similar = [c for c in database if prefix and c.startswith(prefix)]
+
         return {
             "status": "NOT_FOUND",
+            "found": False,
             "code": query_upper,
+            "product": "UNKNOWN",
             "model_id": "UNKNOWN",
             "model": "UNKNOWN",
             "subsystem": "GENERAL",
+            "symptom": "",
             "description": f"Error code '{query_upper}' was not located in active appliance diagnostic database.",
             "severity": "LOW",
             "requires_technician": False,
@@ -124,8 +174,11 @@ def lookup_error_code(code: str) -> dict[str, Any]:
             "citation": "N/A",
             "initial_steps": [],
             "initial_isolation_checks": [],
+            "safety_boundary": "No boundary defined.",
             "technician_authorization_boundary": "No boundary defined.",
             "error_message": f"Error code '{query_upper}' not found in corporate appliance diagnostic database.",
+            "message": f"Error code '{query_upper}' not found in database.",
+            "similar_codes": similar[:5],
             "available_codes": list(database.keys())
         }
 
@@ -906,3 +959,144 @@ def get_component_checklist(component: str, model: str = "") -> list[dict[str, A
             "boundary_condition": "Exception handled safely.",
             "citation": "APPLIANCE-FAULT"
         }]
+
+
+# ============================================================================
+# Multi-Tier RAG & Evaluation Helper Tools
+# ============================================================================
+
+def get_troubleshooting_checklist(code: str) -> dict[str, Any]:
+    """Return ordered diagnostic steps for an error code with safety flags."""
+    info = lookup_error_code(code)
+    if not info.get("found"):
+        return {"found": False, "code": info.get("code", code), "message": info.get("message", "Not found"), "steps": []}
+
+    steps = []
+    checks = info.get("initial_isolation_checks") or info.get("initial_steps") or []
+    for number, text in enumerate(checks, start=1):
+        is_stop = text.lower().startswith("halt procedure") or "technician" in text.lower() or "mandatory halt" in text.lower()
+        steps.append({
+            "number": number,
+            "text": text,
+            "is_stop_step": is_stop,
+            "requires_technician": is_stop,
+            "source": f"Error DB / {info['code']}",
+            "doc_type": "error_code_database",
+        })
+    return {
+        "found": True,
+        "code": info["code"],
+        "product": info.get("product", info.get("model")),
+        "severity": info["severity"],
+        "safety_boundary": info.get("safety_boundary", info.get("technician_authorization_boundary")),
+        "steps": steps,
+    }
+
+
+def search_manual(
+    query: str,
+    product: Optional[str] = None,
+    software_version: Optional[str] = None,
+) -> dict[str, Any]:
+    """Search manuals, bulletins, known issues, and escalation rules via 3-Factor Re-Ranking."""
+    from src.rag import get_knowledge_base
+
+    hits = get_knowledge_base().search(
+        query=query,
+        product=product,
+        software_version=software_version,
+    )
+    return {
+        "found": bool(hits),
+        "results": [
+            {
+                "procedure_id": h["id"],
+                "title": h["title"],
+                "product": h["product"],
+                "doc_type": h.get("doc_type", "product_manual"),
+                "disruption_level": h.get("disruption_level", "Standard"),
+                "needs_technician": h.get("needs_technician", False),
+                "composite_score": h.get("composite_score", 0.0),
+                "similarity_score": h.get("similarity_score", 0.0),
+                "model_score": h.get("model_score", 0.0),
+                "authority_score": h.get("authority_score", 0.60),
+                "ordered_checks": h.get("ordered_checks", []),
+                "hazard_tags": h.get("hazard_tags", []),
+                "text": h["text"],
+            }
+            for h in hits
+        ],
+    }
+
+
+def steps_from_manual_passage(passage: dict) -> list[dict]:
+    """Turn a manual, bulletin, or known issue into an ordered list of steps."""
+    if passage.get("ordered_checks"):
+        steps = []
+        for check in passage["ordered_checks"]:
+            req_tech = bool(check.get("requires_technician"))
+            steps.append({
+                "number": check.get("step", len(steps) + 1),
+                "text": check.get("action", ""),
+                "is_stop_step": req_tech or "halt procedure" in check.get("action", "").lower() or "mandatory halt" in check.get("action", "").lower(),
+                "requires_technician": req_tech,
+                "hazard_notice": check.get("hazard_notice", ""),
+                "source": f"{passage.get('doc_type', 'Document').replace('_', ' ').title()} / {passage.get('id', passage.get('procedure_id', 'REF'))}",
+                "doc_type": passage.get("doc_type", "product_manual"),
+            })
+        return steps
+
+    steps = []
+    text_content = passage.get("text", "")
+    for line in text_content.splitlines():
+        match = re.match(r"^\s*(\d+)\.\s+(.*)", line)
+        if not match:
+            match = re.match(r"^-\s*Step\s*(\d+)\s*(\([^)]+\))?:\s*(.*)", line, re.I)
+            if match:
+                text = match.group(3).strip()
+                is_stop = bool(re.search(r"mandatory .*halt|authorized .*technician|halt procedure|certified technician", text, re.I))
+                steps.append({
+                    "number": len(steps) + 1,
+                    "text": text,
+                    "is_stop_step": is_stop,
+                    "requires_technician": is_stop,
+                    "hazard_notice": "Authorized technician required for hazardous invasive checks" if is_stop else "",
+                    "source": f"Manual / {passage.get('id', passage.get('procedure_id', 'REF'))}",
+                    "doc_type": passage.get("doc_type", "product_manual"),
+                })
+                continue
+        if match:
+            text = match.group(2).replace("**", "")
+            is_stop = bool(re.search(r"mandatory safety halt|authorized .*technician|halt procedure|certified technician", text, re.I))
+            steps.append({
+                "number": len(steps) + 1,
+                "text": text,
+                "is_stop_step": is_stop,
+                "requires_technician": is_stop,
+                "hazard_notice": "Authorized technician required for hazardous invasive checks" if is_stop else "",
+                "source": f"Manual / {passage.get('id', passage.get('procedure_id', 'REF'))}",
+                "doc_type": passage.get("doc_type", "product_manual"),
+            })
+    return steps
+
+
+def get_service_bulletin(bulletin_id: str) -> dict[str, Any]:
+    """Look up a specific manufacturer service bulletin."""
+    from src.config import SERVICE_BULLETINS_PATH
+    if SERVICE_BULLETINS_PATH.exists():
+        data = json.loads(SERVICE_BULLETINS_PATH.read_text(encoding="utf-8"))
+        for item in data:
+            if item["id"].strip().upper() == bulletin_id.strip().upper():
+                return {"found": True, "bulletin": item}
+    return {"found": False, "message": f"Service bulletin '{bulletin_id}' not found."}
+
+
+def get_escalation_rule(rule_id: str) -> dict[str, Any]:
+    """Look up an approved escalation rule and regulatory policy."""
+    from src.config import ESCALATION_RULES_PATH
+    if ESCALATION_RULES_PATH.exists():
+        data = json.loads(ESCALATION_RULES_PATH.read_text(encoding="utf-8"))
+        for item in data:
+            if item["id"].strip().upper() == rule_id.strip().upper():
+                return {"found": True, "rule": item}
+    return {"found": False, "message": f"Escalation rule '{rule_id}' not found."}

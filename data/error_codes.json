@@ -13,7 +13,19 @@
       "Remove lower toe-kick access cover panel and visually inspect base pan sump trough for standing water.",
       "Sponge, syphon, or wet-vacuum accumulated moisture from the base pan to allow the styrofoam float disc to reset down.",
       "Inspect sump perimeter O-ring gasket, water inlet valve solenoid seal, and circulation pump housing for weep traces."
-    ]
+    ],
+    "model": "Bosch 800 Series Dishwasher (SHEM78)",
+    "symptom": "Base trough flood float switch triggered. Water detected in base pan activating safety microswitch and running drain pump continuously.",
+    "requires_authorized_technician": false,
+    "initial_isolation_checks": [
+      "Disconnect 120V/240V mains branch circuit breaker immediately to halt continuous drain pump overrun.",
+      "Turn off under-sink water supply shutoff stopcock feeding the dishwasher braided supply line.",
+      "Remove lower toe-kick access cover panel and visually inspect base pan sump trough for standing water.",
+      "Sponge, syphon, or wet-vacuum accumulated moisture from the base pan to allow the styrofoam float disc to reset down.",
+      "Inspect sump perimeter O-ring gasket, water inlet valve solenoid seal, and circulation pump housing for weep traces."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "E24": {
     "code": "E24",
@@ -29,7 +41,19 @@
       "Inspect BLDC drain pump impeller vanes for trapped debris such as glass shards, toothpicks, fruit seeds, or plastic ties.",
       "Verify drain pump impeller spins with magnetic resistance (rotates in 90-degree tactile detents without dragging).",
       "Inspect rubber non-return flapper check valve adjacent to impeller to confirm it is not stiffened, warped, or stuck closed."
-    ]
+    ],
+    "model": "Bosch 800 Series Dishwasher (SHEM78)",
+    "symptom": "Drain pump sequence timeout or drain circuit flow restriction detected during cycle initiation.",
+    "requires_authorized_technician": false,
+    "initial_isolation_checks": [
+      "Remove lower dish rack and rotate stainless steel microfilter cylinder counter-clockwise to lift out filter basket assembly.",
+      "Pry out white plastic drain pump impeller cover using Torx T20 screwdriver or integral pull tab.",
+      "Inspect BLDC drain pump impeller vanes for trapped debris such as glass shards, toothpicks, fruit seeds, or plastic ties.",
+      "Verify drain pump impeller spins with magnetic resistance (rotates in 90-degree tactile detents without dragging).",
+      "Inspect rubber non-return flapper check valve adjacent to impeller to confirm it is not stiffened, warped, or stuck closed."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "E25": {
     "code": "E25",
@@ -45,7 +69,19 @@
       "Inspect kitchen garbage disposal drain inlet barb to verify knockout plug was removed during installation.",
       "Measure drain pump motor winding resistance across terminal pins with digital multimeter (nominal 85 to 105 Ohms).",
       "MANDATORY HALT: If impeller motor winding shows open circuit or shorted coil, disconnect power and dispatch Authorized Field Technician for BLDC drain pump replacement."
-    ]
+    ],
+    "model": "Bosch 800 Series Dishwasher (SHEM78)",
+    "symptom": "Drain pump impeller blocked or drain pump cover missing, unseated, or locked detent disengaged.",
+    "requires_authorized_technician": false,
+    "initial_isolation_checks": [
+      "Verify white plastic drain pump impeller cover is firmly snapped into place with audible mechanical detent engagement.",
+      "Inspect drain hose routing under kitchen sink for kinks, crushing against cabinet backboard, or missing high drain loop (minimum 32-inch elevation).",
+      "Inspect kitchen garbage disposal drain inlet barb to verify knockout plug was removed during installation.",
+      "Measure drain pump motor winding resistance across terminal pins with digital multimeter (nominal 85 to 105 Ohms).",
+      "MANDATORY HALT: If impeller motor winding shows open circuit or shorted coil, disconnect power and dispatch Authorized Field Technician for BLDC drain pump replacement."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "E27": {
     "code": "E27",
@@ -60,7 +96,18 @@
       "Verify dishwasher is hardwired on dedicated 15A/20A branch circuit and not daisy-chained through downstream GFCI outlets or extension cords.",
       "Inspect rear metal power junction box behind toe-kick panel for loose wire nuts, terminal screw oxidation, or thermal scorching.",
       "Monitor line voltage drop when heater relay energizes; if supply dips below 98V AC, contact certified facility electrician to resolve supply feed impedance."
-    ]
+    ],
+    "model": "Bosch 800 Series Dishwasher (SHEM78)",
+    "symptom": "Line voltage drop below threshold (< 98V AC) under flow-through water heater or heat pump load.",
+    "requires_authorized_technician": false,
+    "initial_isolation_checks": [
+      "Measure AC line voltage at wall receptacle using calibrated True-RMS multimeter under resting state (nominal 120V AC +/- 10%).",
+      "Verify dishwasher is hardwired on dedicated 15A/20A branch circuit and not daisy-chained through downstream GFCI outlets or extension cords.",
+      "Inspect rear metal power junction box behind toe-kick panel for loose wire nuts, terminal screw oxidation, or thermal scorching.",
+      "Monitor line voltage drop when heater relay energizes; if supply dips below 98V AC, contact certified facility electrician to resolve supply feed impedance."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "F06 E01": {
     "code": "F06 E01",
@@ -77,7 +124,20 @@
       "Rotate inner stainless wash basket manually by hand to verify smooth drum spin without mechanical bearing binding or foreign object friction.",
       "Measure tachometer coil resistance across pins 1 and 2 of the motor harness connector (nominal 115 to 130 Ohms at 20 C / 68 F).",
       "MANDATORY HALT: Direct drive stator winding continuity check or motor control inverter replacement requires Authorized Field Technician."
-    ]
+    ],
+    "model": "Whirlpool Front-Load Washer (Alpha/VMW)",
+    "symptom": "Drive motor tachometer failure. ACU/MCU detects no rotational tachometer feedback pulses from 3-phase induction or PMSM motor during active drive command.",
+    "requires_authorized_technician": false,
+    "initial_isolation_checks": [
+      "Disconnect AC line power cord and wait 3 minutes for MCU inverter bus capacitors to safely bleed down below 50V DC.",
+      "Enter Service Diagnostic Mode on console by selecting any 3 keys and pressing in sequence: 1-2-3, 1-2-3, 1-2-3 within 8 seconds.",
+      "Inspect 3-wire tachometer wiring harness between MCU connector J9 and motor endbell sensor connector for pinched or broken leads.",
+      "Rotate inner stainless wash basket manually by hand to verify smooth drum spin without mechanical bearing binding or foreign object friction.",
+      "Measure tachometer coil resistance across pins 1 and 2 of the motor harness connector (nominal 115 to 130 Ohms at 20 C / 68 F).",
+      "MANDATORY HALT: Direct drive stator winding continuity check or motor control inverter replacement requires Authorized Field Technician."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "F03 E01": {
     "code": "F03 E01",
@@ -94,7 +154,20 @@
       "Check vinyl pressure tube for kinks, pinching, punctures, condensation blockages, or detergent residue cakes.",
       "Disconnect vinyl tube at sensor nipple, blow gently down the tube toward tub sump to clear any debris, and verify clear airway.",
       "Verify ACU connector J3 harness seating and inspect DC supply voltage (nominal 5.0 VDC between pins 1 and 3)."
-    ]
+    ],
+    "model": "Whirlpool Front-Load Washer (Alpha/VMW)",
+    "symptom": "Analog Pressure Sensor (APS) fault or pressure signal frequency out of valid operating range (< 20 kHz or > 46 kHz).",
+    "requires_authorized_technician": false,
+    "initial_isolation_checks": [
+      "Disconnect AC line power cord from wall outlet.",
+      "Remove top console / cabinet lid to access the Analog Pressure Sensor mounted on the upper chassis side rail.",
+      "Inspect translucent vinyl air pressure tube connecting pressure transducer to lower tub sump air bell dome.",
+      "Check vinyl pressure tube for kinks, pinching, punctures, condensation blockages, or detergent residue cakes.",
+      "Disconnect vinyl tube at sensor nipple, blow gently down the tube toward tub sump to clear any debris, and verify clear airway.",
+      "Verify ACU connector J3 harness seating and inspect DC supply voltage (nominal 5.0 VDC between pins 1 and 3)."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "F08 E01": {
     "code": "F08 E01",
@@ -110,7 +183,19 @@
       "Measure resistance across heating element terminals with digital multimeter (nominal 12 to 18 Ohms for 120V element; open circuit confirms element failure).",
       "Measure insulation resistance from either heater terminal to tub chassis metal ground (must read greater than 10 Megohms).",
       "MANDATORY HALT: Replacing failed tubular wash heating element or ACU heater drive relay requires Authorized Field Technician."
-    ]
+    ],
+    "model": "Whirlpool Front-Load Washer (Alpha/VMW)",
+    "symptom": "Wash water heater drive circuit failure or heating element open circuit detected during sanitary or steam cycle.",
+    "requires_authorized_technician": true,
+    "initial_isolation_checks": [
+      "Disconnect AC line power cord; remove rear service access panel to expose heating element terminals at tub base.",
+      "Discharge electrostatic potential and inspect heating element terminals and harness wiring for thermal discoloration or loose slip-on spades.",
+      "Measure resistance across heating element terminals with digital multimeter (nominal 12 to 18 Ohms for 120V element; open circuit confirms element failure).",
+      "Measure insulation resistance from either heater terminal to tub chassis metal ground (must read greater than 10 Megohms).",
+      "MANDATORY HALT: Replacing failed tubular wash heating element or ACU heater drive relay requires Authorized Field Technician."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "BLNK-5": {
     "code": "BLNK-5",
@@ -127,7 +212,20 @@
       "Measure linear compressor stator coil resistance across compressor terminal pins U and V (nominal 6.0 to 11.0 Ohms).",
       "Measure insulation resistance from terminal pins to compressor shell ground (must exceed 5 Megohms).",
       "MANDATORY HALT: Linear compressor sealed system repair involves flammable R600a Isobutane refrigerant isolation and torch/flameless lokring brazing. Requires EPA Universal Certified Field Technician."
-    ]
+    ],
+    "model": "LG Smart French-Door Refrigerator (LFXS)",
+    "symptom": "Inverter Linear Compressor locked rotor detection (5 LED blinks on Main Inverter PCB). Compressor fails to reciprocate due to piston seizure or drive circuit phase loss.",
+    "requires_authorized_technician": true,
+    "initial_isolation_checks": [
+      "Disconnect AC power cord and observe mandatory 3-minute PCB capacitor bleed-down delay before removing rear machine compartment cover.",
+      "Locate the red diagnostic LED on the Main Inverter PCB; verify blink cadence (5 rapid 0.5-second flashes followed by 2-second pause).",
+      "Remove compressor 3-pin lead terminal cover and inspect connector pins for heat damage, burning, or carbonization.",
+      "Measure linear compressor stator coil resistance across compressor terminal pins U and V (nominal 6.0 to 11.0 Ohms).",
+      "Measure insulation resistance from terminal pins to compressor shell ground (must exceed 5 Megohms).",
+      "MANDATORY HALT: Linear compressor sealed system repair involves flammable R600a Isobutane refrigerant isolation and torch/flameless lokring brazing. Requires EPA Universal Certified Field Technician."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "BLNK-6": {
     "code": "BLNK-6",
@@ -144,7 +242,20 @@
       "Check Main Inverter PCB IPM aluminum heat sink mounting screws for thermal paste dry-out or loose mechanical torque.",
       "Inspect compressor discharge line temperature to ensure thermal overload protector has not permanently tripped open.",
       "MANDATORY HALT: Inverter drive board replacement, IPM power bridge testing, or shorted linear compressor stator replacement requires Authorized Field Technician."
-    ]
+    ],
+    "model": "LG Smart French-Door Refrigerator (LFXS)",
+    "symptom": "Compressor drive current trip or IPM (Intelligent Power Module) overcurrent protection engaged (6 LED blinks on Main Inverter PCB).",
+    "requires_authorized_technician": true,
+    "initial_isolation_checks": [
+      "Disconnect refrigerator AC power cord and observe 3-minute PCB bleed-down delay before servicing rear electrical compartment.",
+      "Inspect rear machine compartment condenser fan motor assembly; verify fan blade spins freely without debris or wire harness fouling.",
+      "Clean wire condenser heat exchanger matrix using high-velocity vacuum brush to remove heavy lint accumulation.",
+      "Check Main Inverter PCB IPM aluminum heat sink mounting screws for thermal paste dry-out or loose mechanical torque.",
+      "Inspect compressor discharge line temperature to ensure thermal overload protector has not permanently tripped open.",
+      "MANDATORY HALT: Inverter drive board replacement, IPM power bridge testing, or shorted linear compressor stator replacement requires Authorized Field Technician."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "DH-ERR": {
     "code": "DH-ERR",
@@ -161,7 +272,20 @@
       "Measure defrost sheath heater resistance across harness connector pins (nominal 80 to 120 Ohms; open indicates broken heater element).",
       "Test defrost bimetal safety thermostat / thermal fuse continuity (must read 0 Ohms closed at freezing temperature; infinite indicates tripped safety fuse).",
       "Measure defrost NTC temperature sensor resistance (nominal 30k Ohms at 0 C / 32 F; 10k Ohms at 25 C / 77 F)."
-    ]
+    ],
+    "model": "LG Smart French-Door Refrigerator (LFXS)",
+    "symptom": "Defrost heater cycle timeout. Evaporator defrost sensor fails to reach defrost termination threshold temperature (8 C / 46 F) within 80 minutes of heater activation.",
+    "requires_authorized_technician": false,
+    "initial_isolation_checks": [
+      "Inspect rear evaporator cover wall inside freezer compartment for heavy frost blanket, ice bulging, or airflow duct choking.",
+      "Initiate Forced Defrost mode from front dispenser panel by holding 'Refrigerator' and 'Ice Plus' keys simultaneously for 3 seconds.",
+      "Disconnect AC line power cord; remove freezer back wall panel to expose aluminum defrost sheath heater.",
+      "Measure defrost sheath heater resistance across harness connector pins (nominal 80 to 120 Ohms; open indicates broken heater element).",
+      "Test defrost bimetal safety thermostat / thermal fuse continuity (must read 0 Ohms closed at freezing temperature; infinite indicates tripped safety fuse).",
+      "Measure defrost NTC temperature sensor resistance (nominal 30k Ohms at 0 C / 32 F; 10k Ohms at 25 C / 77 F)."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "Er01": {
     "code": "Er01",
@@ -177,7 +301,19 @@
       "Power off machine, unplug from 120V/240V AC supply, and verify both rear boiler manual brass ball drain valves are turned fully horizontal (closed).",
       "Inspect conductive water level probe harness wire on top of steam boiler; verify faston spade connector is tight and free of green corrosion.",
       "Listen for ULKA vibratory fill pump operation during startup cycle; if pump hums without priming, perform manual suction prime via water intake port."
-    ]
+    ],
+    "model": "Breville Dual Boiler Espresso Machine (BES920)",
+    "symptom": "Steam boiler water fill timeout. Conductive water level sensor probe fails to detect water level continuity within 90 seconds of fill solenoid engagement.",
+    "requires_authorized_technician": false,
+    "initial_isolation_checks": [
+      "Verify rear water reservoir is filled with filtered water and magnetic float in reservoir channel floats freely to top of travel.",
+      "Inspect water reservoir mesh intake valve and silicone duckbill gasket in machine floor for calcium scale obstruction or displacement.",
+      "Power off machine, unplug from 120V/240V AC supply, and verify both rear boiler manual brass ball drain valves are turned fully horizontal (closed).",
+      "Inspect conductive water level probe harness wire on top of steam boiler; verify faston spade connector is tight and free of green corrosion.",
+      "Listen for ULKA vibratory fill pump operation during startup cycle; if pump hums without priming, perform manual suction prime via water intake port."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "Er02": {
     "code": "Er02",
@@ -194,7 +330,20 @@
       "Inspect grouphead cartridge heating element wiring and NTC thermistor leads for insulation chafe, silicone sheath splits, or shorting to brass collar.",
       "Measure grouphead NTC thermistor resistance at 25 C / 77 F (nominal 50k Ohms across pins).",
       "MANDATORY HALT: Grouphead solid-state relay (SSR) triac breakdown, power PCB short, or cartridge heater replacement requires Authorized Field Technician."
-    ]
+    ],
+    "model": "Breville Dual Boiler Espresso Machine (BES920)",
+    "symptom": "Grouphead thermal runaway error. Grouphead collar NTC temperature sensor reads greater than 105 C (221 F) for more than 5 consecutive seconds.",
+    "requires_authorized_technician": true,
+    "initial_isolation_checks": [
+      "Unplug machine power cord from wall receptacle immediately to prevent thermal fuse blow and steam boiler overpressure.",
+      "Allow espresso machine to cool down completely to ambient room temperature (minimum 45 minutes).",
+      "Remove top chassis lid (6 Torx T10 screws) while observing mandatory 15-bar pressurized steam boiler scalding warning.",
+      "Inspect grouphead cartridge heating element wiring and NTC thermistor leads for insulation chafe, silicone sheath splits, or shorting to brass collar.",
+      "Measure grouphead NTC thermistor resistance at 25 C / 77 F (nominal 50k Ohms across pins).",
+      "MANDATORY HALT: Grouphead solid-state relay (SSR) triac breakdown, power PCB short, or cartridge heater replacement requires Authorized Field Technician."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
   },
   "Er03": {
     "code": "Er03",
@@ -210,6 +359,760 @@
       "Verify wiring harness from steam boiler sensor well to main board has not been pinched by internal chassis structural ribs.",
       "Measure NTC thermistor resistance directly across sensor probe terminals (nominal 50k Ohms at 25 C / 77 F; infinite indicates open circuit).",
       "MANDATORY HALT: Replacing threaded NTC thermistor sensor probe in high-pressure steam boiler vessel requires Authorized Field Technician with PTFE thread sealant."
-    ]
+    ],
+    "model": "Breville Dual Boiler Espresso Machine (BES920)",
+    "symptom": "Steam boiler NTC thermistor sensor open circuit or disconnected sensor harness detected during power-on self-test.",
+    "requires_authorized_technician": false,
+    "initial_isolation_checks": [
+      "Unplug espresso machine from AC power socket and ensure steam boiler pressure gauge reads 0 bar.",
+      "Remove top chassis lid and inspect 2-pin white Molex harness connector on Main Power Board labeled 'NTC-STM'.",
+      "Verify wiring harness from steam boiler sensor well to main board has not been pinched by internal chassis structural ribs.",
+      "Measure NTC thermistor resistance directly across sensor probe terminals (nominal 50k Ohms at 25 C / 77 F; infinite indicates open circuit).",
+      "MANDATORY HALT: Replacing threaded NTC thermistor sensor probe in high-pressure steam boiler vessel requires Authorized Field Technician with PTFE thread sealant."
+    ],
+    "technician_authorization_boundary": "Invasive component disassembly requires Authorized Field Technician.",
+    "applicable_firmware": ">=Rev 1.0"
+  },
+  "AC-GAS-001": {
+    "code": "AC-GAS-001",
+    "model": "Home Split AC Cooling & Gas Leak Troubleshooter",
+    "subsystem": "Refrigerant Circuit & Evaporator Coil",
+    "symptom": "Evaporator Coil Icing / Refrigerant Gas Pressure Under 70 PSI / Room Air Warm",
+    "description": "The low-pressure vapor line indicates severe refrigerant attenuation. Suction pressure dropped below operational threshold resulting in evaporator icing and thermal cooling loss.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "Homeowner may clean dust filters, inspect outdoor coil airflow, and check flare nuts for oily residue. Vacuum gauge testing, nitrogen pressure-decay test, or R32/R410A refrigerant charging requires EPA/HVAC Certified Field Technician.",
+    "initial_isolation_checks": [
+      "Switch AC to Fan-Only mode for 30 minutes to defrost the indoor evaporator coil without damaging fins.",
+      "Remove and inspect washable nylon air filters; clean under running tap water and dry completely.",
+      "Inspect outdoor condenser unit for leaves, debris, or wall clearance blockage (minimum 30cm clearance required).",
+      "Check brass service valve flare joints on outdoor unit with soapy water solution to detect active gas bubbles."
+    ],
+    "applicable_firmware": ">=v2.0.0",
+    "model_id": "Home Split AC Cooling & Gas Leak Troubleshooter",
+    "requires_technician": false,
+    "initial_steps": [
+      "Switch AC to Fan-Only mode for 30 minutes to defrost the indoor evaporator coil without damaging fins.",
+      "Remove and inspect washable nylon air filters; clean under running tap water and dry completely.",
+      "Inspect outdoor condenser unit for leaves, debris, or wall clearance blockage (minimum 30cm clearance required).",
+      "Check brass service valve flare joints on outdoor unit with soapy water solution to detect active gas bubbles."
+    ],
+    "citation": "AC-GAS-001_REF"
+  },
+  "AC-COMP-102": {
+    "code": "AC-COMP-102",
+    "model": "Home Split AC Cooling & Gas Leak Troubleshooter",
+    "subsystem": "Inverter Compressor & IPM Drive",
+    "symptom": "Outdoor Compressor Thermal Cutoff Trip / Buzzing Sound Then Silence",
+    "description": "Inverter Power Module (IPM) detects excessive current draw or compressor thermal overload protection opens.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User may reset mains miniature circuit breaker (MCB) and verify voltage stabilizer output. Testing compressor motor winding resistance (U-V-W) or IPM PCB replacement requires Certified HVAC Technician.",
+    "initial_isolation_checks": [
+      "Verify input mains voltage on dedicated stabilizer display (must be between 210V and 240V AC).",
+      "Perform a full power cycle: Switch off AC isolator switch for 5 minutes to discharge IPM capacitor bank.",
+      "Check outdoor fan rotation: Inspect if condenser fan spins freely by hand with power disconnected."
+    ],
+    "applicable_firmware": ">=v2.1.0",
+    "model_id": "Home Split AC Cooling & Gas Leak Troubleshooter",
+    "requires_technician": false,
+    "initial_steps": [
+      "Verify input mains voltage on dedicated stabilizer display (must be between 210V and 240V AC).",
+      "Perform a full power cycle: Switch off AC isolator switch for 5 minutes to discharge IPM capacitor bank.",
+      "Check outdoor fan rotation: Inspect if condenser fan spins freely by hand with power disconnected."
+    ],
+    "citation": "AC-COMP-102_REF"
+  },
+  "AC-COMM-203": {
+    "code": "AC-COMM-203",
+    "model": "Home Split AC Cooling & Gas Leak Troubleshooter",
+    "subsystem": "Control Board & Serial Communication",
+    "symptom": "Indoor Display Flashing E1 / Communication Lost Between Indoor & Outdoor Units",
+    "description": "Microcontroller fails to receive serial telemetry packets between the indoor display board and outdoor inverter PCB.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User may check interconnecting terminal wiring screws. Replacing blown control board fuses or logic boards requires Certified HVAC Technician.",
+    "initial_isolation_checks": [
+      "Isolate mains power and inspect terminal connection block (pins 1, 2, and S) for loose screw terminals.",
+      "Check interconnecting 4-core cable jacket along outdoor conduit for rodent chewing or sun degradation.",
+      "Press and hold remote control 'Reset' button for 5 seconds to clear volatile controller state."
+    ],
+    "applicable_firmware": ">=v1.5.0",
+    "model_id": "Home Split AC Cooling & Gas Leak Troubleshooter",
+    "requires_technician": false,
+    "initial_steps": [
+      "Isolate mains power and inspect terminal connection block (pins 1, 2, and S) for loose screw terminals.",
+      "Check interconnecting 4-core cable jacket along outdoor conduit for rodent chewing or sun degradation.",
+      "Press and hold remote control 'Reset' button for 5 seconds to clear volatile controller state."
+    ],
+    "citation": "AC-COMM-203_REF"
+  },
+  "WM-DRN-001": {
+    "code": "WM-DRN-001",
+    "model": "Front-Load Washing Machine Motor & Drain Pump Assistant",
+    "subsystem": "Drain Pump & Waste Sump Filter",
+    "symptom": "Drum Full of Water / Drain Error E20 / OE Displayed / Water Fails to Evacuate",
+    "description": "Pressure transducer detects water level not decreasing within 300 seconds of drain cycle initiation.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User is authorized to open lower service flap, drain via emergency hose, and clean coin trap filter. Drain pump motor stator replacement or main PCB triac repair requires Appliance Service Specialist.",
+    "initial_isolation_checks": [
+      "Place shallow tray under lower-right access door and pull the emergency drain tube plug to drain standing water.",
+      "Unscrew debris coin trap filter counter-clockwise and remove lint, coins, hairpins, and sediment.",
+      "Inspect interior pump chamber with flashlight: ensure plastic impeller blades spin freely when nudged with a pen.",
+      "Check corrugated rear drain hose for kinks, height limitation (must be 65-100cm), or clogged standpipe."
+    ],
+    "applicable_firmware": ">=v3.0.0",
+    "model_id": "Front-Load Washing Machine Motor & Drain Pump Assistant",
+    "requires_technician": false,
+    "initial_steps": [
+      "Place shallow tray under lower-right access door and pull the emergency drain tube plug to drain standing water.",
+      "Unscrew debris coin trap filter counter-clockwise and remove lint, coins, hairpins, and sediment.",
+      "Inspect interior pump chamber with flashlight: ensure plastic impeller blades spin freely when nudged with a pen.",
+      "Check corrugated rear drain hose for kinks, height limitation (must be 65-100cm), or clogged standpipe."
+    ],
+    "citation": "WM-DRN-001_REF"
+  },
+  "WM-MTR-102": {
+    "code": "WM-MTR-102",
+    "model": "Front-Load Washing Machine Motor & Drain Pump Assistant",
+    "subsystem": "BLDC Direct Drive Motor & Hall Sensor",
+    "symptom": "Drum Juddering or Refusing to Rotate / Motor Error LE / 3E Displayed",
+    "description": "Rotor position hall sensor fails to detect tachometer pulses or BLDC motor stator overload circuit triggers.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User may verify load capacity and perform drum spin test by hand. Replacing rotor magnet hub, stator windings, or hall sensor assembly requires Certified Appliance Technician.",
+    "initial_isolation_checks": [
+      "Unload 50% of wet laundry: Overloading thick blankets causes motor stall protection to engage.",
+      "Manually rotate inner stainless drum by hand: Check for smooth rotation without grinding bearing noise.",
+      "Perform hard controller reset: Unplug power cord for 10 minutes, press and hold Start/Pause for 5 seconds, then plug back in."
+    ],
+    "applicable_firmware": ">=v3.2.0",
+    "model_id": "Front-Load Washing Machine Motor & Drain Pump Assistant",
+    "requires_technician": false,
+    "initial_steps": [
+      "Unload 50% of wet laundry: Overloading thick blankets causes motor stall protection to engage.",
+      "Manually rotate inner stainless drum by hand: Check for smooth rotation without grinding bearing noise.",
+      "Perform hard controller reset: Unplug power cord for 10 minutes, press and hold Start/Pause for 5 seconds, then plug back in."
+    ],
+    "citation": "WM-MTR-102_REF"
+  },
+  "WM-DOOR-203": {
+    "code": "WM-DOOR-203",
+    "model": "Front-Load Washing Machine Motor & Drain Pump Assistant",
+    "subsystem": "Door Latch & PTC Thermal Safety Interlock",
+    "symptom": "Door Lock Error dE / Door Closed But Cycle Refuses to Start",
+    "description": "Microswitch interlock circuit does not confirm mechanical latch engagement before energizing water intake valves.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User may clean door hook and rubber door gasket groove. Dismantling front door gasket to replace internal door switch solenoid requires Authorized Technician.",
+    "initial_isolation_checks": [
+      "Inspect front door rubber bellow gasket for caught baby socks or clothes wedged against the glass.",
+      "Check door latch strike hook for physical alignment: Lift slightly when closing until a distinct mechanical click is heard.",
+      "Wipe clean the door latch receptacle on the chassis with a dry microfiber cloth to remove detergent buildup."
+    ],
+    "applicable_firmware": ">=v2.0.0",
+    "model_id": "Front-Load Washing Machine Motor & Drain Pump Assistant",
+    "requires_technician": false,
+    "initial_steps": [
+      "Inspect front door rubber bellow gasket for caught baby socks or clothes wedged against the glass.",
+      "Check door latch strike hook for physical alignment: Lift slightly when closing until a distinct mechanical click is heard.",
+      "Wipe clean the door latch receptacle on the chassis with a dry microfiber cloth to remove detergent buildup."
+    ],
+    "citation": "WM-DOOR-203_REF"
+  },
+  "SP-BAT-001": {
+    "code": "SP-BAT-001",
+    "model": "Smartphone Screen & Battery Replacement Safety Guide",
+    "subsystem": "Lithium-Ion Polymer Battery Pack",
+    "symptom": "Screen Lifting From Frame / Battery Swelling / Rapid Discharge (< 2 Hours)",
+    "description": "Lithium pouch cell electrolyte decomposition has caused gas generation and swelling. Severe risk of thermal runaway and fire if punctured.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": true,
+    "technician_authorization_boundary": "MANDATORY SAFETY HALT: Never apply heat gun or metal pry tools to swollen pouch cells. Discontinue charging immediately. Battery replacement requires ESD-safe Certified Device Technician in a fire-safe station.",
+    "initial_isolation_checks": [
+      "IMMEDIATE SAFETY ACTION: Disconnect charger immediately and power down device completely.",
+      "Do NOT press down on protruding screen or attempt to force back cover closed.",
+      "Place device in a non-flammable, fire-resistant container (metal box or ceramic tile area) away from combustibles.",
+      "Halt procedure: Dispatch unit to Authorized Device Repair Depot for solvent-assisted battery extraction."
+    ],
+    "applicable_firmware": ">=v14.0.0",
+    "model_id": "Smartphone Screen & Battery Replacement Safety Guide",
+    "requires_technician": true,
+    "initial_steps": [
+      "IMMEDIATE SAFETY ACTION: Disconnect charger immediately and power down device completely.",
+      "Do NOT press down on protruding screen or attempt to force back cover closed.",
+      "Place device in a non-flammable, fire-resistant container (metal box or ceramic tile area) away from combustibles.",
+      "Halt procedure: Dispatch unit to Authorized Device Repair Depot for solvent-assisted battery extraction."
+    ],
+    "citation": "SP-BAT-001_REF"
+  },
+  "SP-DISP-102": {
+    "code": "SP-DISP-102",
+    "model": "Smartphone Screen & Battery Replacement Safety Guide",
+    "subsystem": "AMOLED/OLED Display & Digitizer FPC",
+    "symptom": "Touch Unresponsive / Green Vertical Lines / Black Screen With Haptic Vibration",
+    "description": "Display driver IC (DDIC) or digitizer flex cable unseated or damaged post-drop impact.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can attempt forced software reboot and external display mirror test. Opening chassis with heat plate and replacing display panel requires ESD-Certified Technician.",
+    "initial_isolation_checks": [
+      "Perform hard hardware restart: Press and hold Power + Volume Down keys simultaneously for 12 seconds.",
+      "Remove third-party magnetic phone cases and inspect glass screen protector for trapped dust or bubbles.",
+      "Connect device to external monitor via USB-C to HDMI adapter to confirm motherboard logic core is functional."
+    ],
+    "applicable_firmware": ">=v15.0.0",
+    "model_id": "Smartphone Screen & Battery Replacement Safety Guide",
+    "requires_technician": false,
+    "initial_steps": [
+      "Perform hard hardware restart: Press and hold Power + Volume Down keys simultaneously for 12 seconds.",
+      "Remove third-party magnetic phone cases and inspect glass screen protector for trapped dust or bubbles.",
+      "Connect device to external monitor via USB-C to HDMI adapter to confirm motherboard logic core is functional."
+    ],
+    "citation": "SP-DISP-102_REF"
+  },
+  "SP-CHG-203": {
+    "code": "SP-CHG-203",
+    "model": "Smartphone Screen & Battery Replacement Safety Guide",
+    "subsystem": "USB-C Port & Sub-Board Protection",
+    "symptom": "Moisture Detected Warning In Charging Port / Phone Refuses Wired Charge",
+    "description": "Corrosion / conductive moisture bridge detected between VBUS and CC pins on USB-C receptacle.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can perform room-temperature air drying. Inserting metal needles, paperclips, or hair dryers into port is strictly prohibited.",
+    "initial_isolation_checks": [
+      "Unplug charging cable immediately; power down device to prevent electrochemical pin electrolysis.",
+      "Gently tap phone against hand with USB port facing downwards to dislodge standing liquid droplets.",
+      "Leave phone upright in an airy room with gentle fan for 4 hours; do NOT use hair dryers or hot air blowers.",
+      "Inspect port with flashlight: If lint is visible, gently tease out with a dry wooden toothpick."
+    ],
+    "applicable_firmware": ">=v12.0.0",
+    "model_id": "Smartphone Screen & Battery Replacement Safety Guide",
+    "requires_technician": false,
+    "initial_steps": [
+      "Unplug charging cable immediately; power down device to prevent electrochemical pin electrolysis.",
+      "Gently tap phone against hand with USB port facing downwards to dislodge standing liquid droplets.",
+      "Leave phone upright in an airy room with gentle fan for 4 hours; do NOT use hair dryers or hot air blowers.",
+      "Inspect port with flashlight: If lint is visible, gently tease out with a dry wooden toothpick."
+    ],
+    "citation": "SP-CHG-203_REF"
+  },
+  "CF-DESC-001": {
+    "code": "CF-DESC-001",
+    "model": "Automatic Espresso Coffee Machine Descaling & Pressure Assistant",
+    "subsystem": "Thermocoil Boiler & Flow Meter",
+    "symptom": "Coffee Dispensing in Weak Drops / Pump Strained Sound / Descale LED On",
+    "description": "Calcium carbonate scale accumulation inside thermocoil capillary tubes restricts hydraulic flow below 1.5 ml/sec.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User may run standard organic descaling solution cycles and clean shower screen. Disassembling high-pressure brass boiler or solenoid valves requires Authorized Coffee Technician.",
+    "initial_isolation_checks": [
+      "Remove water tank and inspect in-tank resin filter; replace filter if older than 90 days.",
+      "Unscrew dispersion shower screen using short stubby screwdriver; soak in hot water and clean port holes with pin.",
+      "Prepare manufacturer descaling solution (food-grade citric/lactic acid) and execute machine automatic descale cycle.",
+      "Run two full tanks of clean filtered water to flush residual acid solution from boiler lines."
+    ],
+    "applicable_firmware": ">=v1.0.0",
+    "model_id": "Automatic Espresso Coffee Machine Descaling & Pressure Assistant",
+    "requires_technician": false,
+    "initial_steps": [
+      "Remove water tank and inspect in-tank resin filter; replace filter if older than 90 days.",
+      "Unscrew dispersion shower screen using short stubby screwdriver; soak in hot water and clean port holes with pin.",
+      "Prepare manufacturer descaling solution (food-grade citric/lactic acid) and execute machine automatic descale cycle.",
+      "Run two full tanks of clean filtered water to flush residual acid solution from boiler lines."
+    ],
+    "citation": "CF-DESC-001_REF"
+  },
+  "CF-PRES-102": {
+    "code": "CF-PRES-102",
+    "model": "Automatic Espresso Coffee Machine Descaling & Pressure Assistant",
+    "subsystem": "Vibration Pump & Overpressure Valve (OPV)",
+    "symptom": "Pressure Gauge Spikes Past 15 Bar / Portafilter Gasket Leaks / Channeled Shot",
+    "description": "OPV bypass valve stuck closed or coffee grind setting excessively fine causing extraction blockage.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can calibrate grind size and adjust coffee dose weight. Opening housing to replace 15-bar vibration pump requires Authorized Technician.",
+    "initial_isolation_checks": [
+      "Adjust grinder 3 steps coarser to prevent over-compacted puck resistance.",
+      "Verify dry ground dose with digital scale: Standard double basket capacity is 18.0g +/- 0.5g.",
+      "Perform a blank extraction test (press double shot button without portafilter inserted) to measure raw group flow rate."
+    ],
+    "applicable_firmware": ">=v1.2.0",
+    "model_id": "Automatic Espresso Coffee Machine Descaling & Pressure Assistant",
+    "requires_technician": false,
+    "initial_steps": [
+      "Adjust grinder 3 steps coarser to prevent over-compacted puck resistance.",
+      "Verify dry ground dose with digital scale: Standard double basket capacity is 18.0g +/- 0.5g.",
+      "Perform a blank extraction test (press double shot button without portafilter inserted) to measure raw group flow rate."
+    ],
+    "citation": "CF-PRES-102_REF"
+  },
+  "CF-GRND-203": {
+    "code": "CF-GRND-203",
+    "model": "Automatic Espresso Coffee Machine Descaling & Pressure Assistant",
+    "subsystem": "Conical Steel Burrs & Planetary Gearbox",
+    "symptom": "Grinder Motor Humming But Burrs Jammed / No Coffee Powder Produced",
+    "description": "Foreign pebble or unroasted bean wedged between inner conical burr teeth causing motor thermal lockout.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can unlock bean hopper and remove upper burr ring. Gearbox motor teardown requires Authorized Technician.",
+    "initial_isolation_checks": [
+      "Switch off machine power cord and twist hopper counter-clockwise to remove coffee beans.",
+      "Vacuum out loose beans and lift out the upper stainless steel burr using the metal wire handle.",
+      "Inspect inner burrs for small stones or hardened bean fragments; clean flutes with stiff wire brush."
+    ],
+    "applicable_firmware": ">=v1.0.0",
+    "model_id": "Automatic Espresso Coffee Machine Descaling & Pressure Assistant",
+    "requires_technician": false,
+    "initial_steps": [
+      "Switch off machine power cord and twist hopper counter-clockwise to remove coffee beans.",
+      "Vacuum out loose beans and lift out the upper stainless steel burr using the metal wire handle.",
+      "Inspect inner burrs for small stones or hardened bean fragments; clean flutes with stiff wire brush."
+    ],
+    "citation": "CF-GRND-203_REF"
+  },
+  "RO-FLTR-001": {
+    "code": "RO-FLTR-001",
+    "model": "Home RO Water Purifier Filter & Membrane Monitor",
+    "subsystem": "Sediment & Pre-Carbon Filtration Stage",
+    "symptom": "Purified Water Dribble / Booster Pump Vibrating Loudly / Low Inlet Pressure",
+    "description": "Suspended particulates and chlorine adsorbents have saturated the 5-micron spun filter causing pump cavitation.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can replace twist-and-lock sediment and activated carbon filter cartridges. High-pressure booster pump diaphragm servicing requires Water Treatment Specialist.",
+    "initial_isolation_checks": [
+      "Verify household feed water ball valve is fully parallel with line and inlet water pressure exceeds 10 PSI.",
+      "Inspect external spun polypropylene pre-filter bowl: If cartridge has turned dark brown, replace cartridge.",
+      "Disconnect inlet tube to first carbon stage into bucket to verify continuous unhindered raw water flow."
+    ],
+    "applicable_firmware": ">=v2.0.0",
+    "model_id": "Home RO Water Purifier Filter & Membrane Monitor",
+    "requires_technician": false,
+    "initial_steps": [
+      "Verify household feed water ball valve is fully parallel with line and inlet water pressure exceeds 10 PSI.",
+      "Inspect external spun polypropylene pre-filter bowl: If cartridge has turned dark brown, replace cartridge.",
+      "Disconnect inlet tube to first carbon stage into bucket to verify continuous unhindered raw water flow."
+    ],
+    "citation": "RO-FLTR-001_REF"
+  },
+  "RO-MEM-102": {
+    "code": "RO-MEM-102",
+    "model": "Home RO Water Purifier Filter & Membrane Monitor",
+    "subsystem": "Thin-Film Composite (TFC) RO Membrane",
+    "symptom": "TDS Alert Beeping / Output Water TDS Exceeds 250 PPM / Reject Water Constant Flow",
+    "description": "TFC membrane pores ruptured or auto-flush solenoid valve stuck in open position bypassing reject restrictor.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can test water with handheld digital TDS meter. High-pressure membrane vessel extraction and flow restrictor replacement recommended with Certified Technician.",
+    "initial_isolation_checks": [
+      "Measure raw tap water TDS and pure water TDS using calibrated digital TDS pen (healthy rejection rate > 90%).",
+      "Inspect auto-flush solenoid: Listen for a 30-second high-velocity flush upon startup followed by quiet filtration.",
+      "Check wastewater flow restrictor (FR-450): Ensure reject line is flowing and not blocked or disconnected."
+    ],
+    "applicable_firmware": ">=v2.2.0",
+    "model_id": "Home RO Water Purifier Filter & Membrane Monitor",
+    "requires_technician": false,
+    "initial_steps": [
+      "Measure raw tap water TDS and pure water TDS using calibrated digital TDS pen (healthy rejection rate > 90%).",
+      "Inspect auto-flush solenoid: Listen for a 30-second high-velocity flush upon startup followed by quiet filtration.",
+      "Check wastewater flow restrictor (FR-450): Ensure reject line is flowing and not blocked or disconnected."
+    ],
+    "citation": "RO-MEM-102_REF"
+  },
+  "RO-LEAK-203": {
+    "code": "RO-LEAK-203",
+    "model": "Home RO Water Purifier Filter & Membrane Monitor",
+    "subsystem": "Storage Tank Float & Chassis Leak Sensor",
+    "symptom": "Beeping Chassis Leak Alarm / Water Droplets Pooling in Bottom Drip Tray",
+    "description": "Conductive leak sensor in machine base detected moisture triggering automated inlet solenoid shutoff.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can shut inlet valve, inspect quick-connect push fittings, and dry base pan.",
+    "initial_isolation_checks": [
+      "Immediately shut off the blue water supply adapter valve and disconnect electrical power plug.",
+      "Inspect all 1/4-inch push-fit elbow joints; ensure tubing is cut square and fully seated into collets.",
+      "Wipe the base pan and sponge leak-detect pads completely dry with a towel to silence safety buzzer."
+    ],
+    "applicable_firmware": ">=v1.8.0",
+    "model_id": "Home RO Water Purifier Filter & Membrane Monitor",
+    "requires_technician": false,
+    "initial_steps": [
+      "Immediately shut off the blue water supply adapter valve and disconnect electrical power plug.",
+      "Inspect all 1/4-inch push-fit elbow joints; ensure tubing is cut square and fully seated into collets.",
+      "Wipe the base pan and sponge leak-detect pads completely dry with a towel to silence safety buzzer."
+    ],
+    "citation": "RO-LEAK-203_REF"
+  },
+  "ES-THRT-001": {
+    "code": "ES-THRT-001",
+    "model": "Electric Scooter Throttle & Charger Diagnostic Tool",
+    "subsystem": "Hall Effect Throttle & Handlebar Display",
+    "symptom": "Scooter Error Code 14 Displayed / Red Wrench Icon / Throttle Lever Inoperative",
+    "description": "Controller detects analog throttle voltage outside valid window (0.8V to 4.2V), indicating disconnected or jammed sensor magnet.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can inspect thumb throttle return spring and handlebar cable connector. Electronic controller repair requires Authorized EV Technician.",
+    "initial_isolation_checks": [
+      "Inspect thumb throttle lever: verify it springs back instantly when released; ensure handlebar grip rubber is not rubbing against throttle pivot.",
+      "Unplug and inspect the 3-pin waterproof Julet connector between handlebar and stem for bent gold pins or moisture.",
+      "Perform electronic reset: Press brake lever and throttle lever simultaneously while holding power button for 5 seconds."
+    ],
+    "applicable_firmware": ">=v1.6.0",
+    "model_id": "Electric Scooter Throttle & Charger Diagnostic Tool",
+    "requires_technician": false,
+    "initial_steps": [
+      "Inspect thumb throttle lever: verify it springs back instantly when released; ensure handlebar grip rubber is not rubbing against throttle pivot.",
+      "Unplug and inspect the 3-pin waterproof Julet connector between handlebar and stem for bent gold pins or moisture.",
+      "Perform electronic reset: Press brake lever and throttle lever simultaneously while holding power button for 5 seconds."
+    ],
+    "citation": "ES-THRT-001_REF"
+  },
+  "ES-CHG-102": {
+    "code": "ES-CHG-102",
+    "model": "Electric Scooter Throttle & Charger Diagnostic Tool",
+    "subsystem": "Lithium BMS & Charging Port",
+    "symptom": "Charger Indicator Blinks Alternating Red/Green / Scooter Stuck at 20% Charge",
+    "description": "Battery Management System (BMS) charging MOSFET in protective cutoff due to cell group imbalance or charge port short.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": true,
+    "technician_authorization_boundary": "MANDATORY SAFETY HALT: Opening scooter deck containing 36V/48V high-capacity lithium battery pack requires Certified Light EV Technician. Puncturing or shorting pack poses flash fire hazard.",
+    "initial_isolation_checks": [
+      "Unplug charger from wall and inspect charger cylindrical port pins for scorch marks or debris.",
+      "Verify charger output with digital multimeter: Nominal open-circuit voltage should read 42.0V +/- 0.5V DC.",
+      "Allow scooter battery to reach room temperature (20-25 C) for 2 hours if stored in sub-zero or scorching outdoor temperatures.",
+      "Halt procedure: Dispatch scooter to certified EV service depot for battery deck BMS telemetry read."
+    ],
+    "applicable_firmware": ">=v2.0.0",
+    "model_id": "Electric Scooter Throttle & Charger Diagnostic Tool",
+    "requires_technician": true,
+    "initial_steps": [
+      "Unplug charger from wall and inspect charger cylindrical port pins for scorch marks or debris.",
+      "Verify charger output with digital multimeter: Nominal open-circuit voltage should read 42.0V +/- 0.5V DC.",
+      "Allow scooter battery to reach room temperature (20-25 C) for 2 hours if stored in sub-zero or scorching outdoor temperatures.",
+      "Halt procedure: Dispatch scooter to certified EV service depot for battery deck BMS telemetry read."
+    ],
+    "citation": "ES-CHG-102_REF"
+  },
+  "ES-MTR-203": {
+    "code": "ES-MTR-203",
+    "model": "Electric Scooter Throttle & Charger Diagnostic Tool",
+    "subsystem": "BLDC Hub Motor & Phase Wires",
+    "symptom": "Rear/Front Wheel Heavy Resistance When Pushed / Motor Stutters Under Load",
+    "description": "Motor phase line short-circuit or blown MOSFET on main motor controller board creating regenerative magnetic resistance.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can check wheel clearance and axle cable. Controller replacement requires Authorized EV Technician.",
+    "initial_isolation_checks": [
+      "Lift motor wheel off ground with power OFF and spin by hand: Check if wheel spins smoothly or feels magnetically locked.",
+      "Inspect the thick black motor cable exiting wheel axle: Check for cuts or rubbing damage against brake disc.",
+      "Disconnect motor 3-phase connector (yellow, green, blue): If wheel spins freely with wires disconnected, motor controller MOSFET is shorted."
+    ],
+    "applicable_firmware": ">=v1.4.0",
+    "model_id": "Electric Scooter Throttle & Charger Diagnostic Tool",
+    "requires_technician": false,
+    "initial_steps": [
+      "Lift motor wheel off ground with power OFF and spin by hand: Check if wheel spins smoothly or feels magnetically locked.",
+      "Inspect the thick black motor cable exiting wheel axle: Check for cuts or rubbing damage against brake disc.",
+      "Disconnect motor 3-phase connector (yellow, green, blue): If wheel spins freely with wires disconnected, motor controller MOSFET is shorted."
+    ],
+    "citation": "ES-MTR-203_REF"
+  },
+  "MW-DOOR-001": {
+    "code": "MW-DOOR-001",
+    "model": "Microwave Oven Magnetron & Door Interlock Safety Assistant",
+    "subsystem": "Door Latch & Safety Interlock Switches",
+    "symptom": "Timer Counts Down But Turntable & Heating Do Not Start / Light Off",
+    "description": "Primary or secondary door interlock microswitch not closing properly when door latches shut.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can clean door hinges and check latch hook alignment. Removing outer metal enclosure requires Certified Appliance Technician due to high-voltage capacitor hazard.",
+    "initial_isolation_checks": [
+      "Inspect door latch hooks on door edge: Check if plastic hooks are cracked, broken, or wobbling.",
+      "Clean door seal perimeter and latch slots on cavity face to eliminate grease or food crust accumulation.",
+      "Firmly close microwave door while observing internal light switch response: Ensure latch clicks into position."
+    ],
+    "applicable_firmware": ">=v1.0.0",
+    "model_id": "Microwave Oven Magnetron & Door Interlock Safety Assistant",
+    "requires_technician": false,
+    "initial_steps": [
+      "Inspect door latch hooks on door edge: Check if plastic hooks are cracked, broken, or wobbling.",
+      "Clean door seal perimeter and latch slots on cavity face to eliminate grease or food crust accumulation.",
+      "Firmly close microwave door while observing internal light switch response: Ensure latch clicks into position."
+    ],
+    "citation": "MW-DOOR-001_REF"
+  },
+  "MW-MAG-102": {
+    "code": "MW-MAG-102",
+    "model": "Microwave Oven Magnetron & Door Interlock Safety Assistant",
+    "subsystem": "High Voltage Magnetron & Waveguide",
+    "symptom": "Loud Arcing Sparks in Cavity / Ozone Burning Smell / Food Completely Cold",
+    "description": "Waveguide cover mica sheet charred or magnetron antenna probe arcing against chassis cavity metal.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": true,
+    "technician_authorization_boundary": "MANDATORY SAFETY HALT: Lethal 2,200V / 4,000V DC stored in high-voltage capacitor even when unplugged. Under no circumstances should non-certified users remove outer sheet metal cover.",
+    "initial_isolation_checks": [
+      "IMMEDIATELY UNPLUG OVEN FROM WALL RECEPTACLE. Do not attempt another heating cycle.",
+      "Inspect right-hand cavity wall: Locate the silver/brown mica waveguide cover sheet.",
+      "Check for black burnt spots, holes, or carbon grease marks on mica sheet (clean or replace mica sheet if damaged).",
+      "Halt procedure: Dispatch unit to Certified Appliance Depot for High-Voltage capacitor discharge and magnetron test."
+    ],
+    "applicable_firmware": ">=v1.0.0",
+    "model_id": "Microwave Oven Magnetron & Door Interlock Safety Assistant",
+    "requires_technician": true,
+    "initial_steps": [
+      "IMMEDIATELY UNPLUG OVEN FROM WALL RECEPTACLE. Do not attempt another heating cycle.",
+      "Inspect right-hand cavity wall: Locate the silver/brown mica waveguide cover sheet.",
+      "Check for black burnt spots, holes, or carbon grease marks on mica sheet (clean or replace mica sheet if damaged).",
+      "Halt procedure: Dispatch unit to Certified Appliance Depot for High-Voltage capacitor discharge and magnetron test."
+    ],
+    "citation": "MW-MAG-102_REF"
+  },
+  "MW-CAP-203": {
+    "code": "MW-CAP-203",
+    "model": "Microwave Oven Magnetron & Door Interlock Safety Assistant",
+    "subsystem": "High Voltage Diode & Capacitor Protection",
+    "symptom": "Loud Transformer Buzzing / Blown Internal Ceramic Fuse Upon Pressing Start",
+    "description": "High voltage rectifier diode short-circuited or HV capacitor dielectric breakdown placing direct AC short on transformer secondary.",
+    "severity": "CRITICAL",
+    "requires_authorized_technician": true,
+    "technician_authorization_boundary": "MANDATORY SAFETY HALT: High voltage shock hazard. Servicing requires Certified Appliance Technician with insulated 20kV grounding discharge probe.",
+    "initial_isolation_checks": [
+      "Disconnect power cord from outlet immediately.",
+      "Verify household circuit breaker: Confirm if microwave dedicated branch circuit breaker tripped.",
+      "Halt procedure: High voltage capacitor holds lethal charge for days. Refer to Certified Appliance Repair."
+    ],
+    "applicable_firmware": ">=v1.0.0",
+    "model_id": "Microwave Oven Magnetron & Door Interlock Safety Assistant",
+    "requires_technician": true,
+    "initial_steps": [
+      "Disconnect power cord from outlet immediately.",
+      "Verify household circuit breaker: Confirm if microwave dedicated branch circuit breaker tripped.",
+      "Halt procedure: High voltage capacitor holds lethal charge for days. Refer to Certified Appliance Repair."
+    ],
+    "citation": "MW-CAP-203_REF"
+  },
+  "3D-NOZ-001": {
+    "code": "3D-NOZ-001",
+    "model": "Home 3D Printer Bed Leveling & Nozzle Clog Troubleshooter",
+    "subsystem": "Hotend Assembly & Brass Nozzle (0.4mm)",
+    "symptom": "Extruder Stepper Clicking / Skipping Steps / Incomplete or Missing Top Layers",
+    "description": "Partial carbonized filament occlusion in nozzle orifice (0.4mm) or PTFE tube heat-creep causing high backpressure.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User is authorized to perform cold-pull cleaning, nozzle declog needle probing, and nozzle replacement at operating temperature (220 C with gloves).",
+    "initial_isolation_checks": [
+      "Heat hotend to 220 C (for PLA) or 245 C (for PETG); insert 0.35mm acupuncture needle upward into nozzle orifice.",
+      "Perform 'Atomic Cold Pull': Heat to 200 C, cool down to 90 C, then firmly pull filament backward to extract debris plug.",
+      "Inspect extruder gear teeth: Clean out shaved plastic dust using an old toothbrush and adjust tension idler screw.",
+      "Check hotend cooling fan: Ensure front heatsink fan runs at 100% whenever hotend temperature exceeds 50 C."
+    ],
+    "applicable_firmware": ">=v2.0.0",
+    "model_id": "Home 3D Printer Bed Leveling & Nozzle Clog Troubleshooter",
+    "requires_technician": false,
+    "initial_steps": [
+      "Heat hotend to 220 C (for PLA) or 245 C (for PETG); insert 0.35mm acupuncture needle upward into nozzle orifice.",
+      "Perform 'Atomic Cold Pull': Heat to 200 C, cool down to 90 C, then firmly pull filament backward to extract debris plug.",
+      "Inspect extruder gear teeth: Clean out shaved plastic dust using an old toothbrush and adjust tension idler screw.",
+      "Check hotend cooling fan: Ensure front heatsink fan runs at 100% whenever hotend temperature exceeds 50 C."
+    ],
+    "citation": "3D-NOZ-001_REF"
+  },
+  "3D-BED-102": {
+    "code": "3D-BED-102",
+    "model": "Home 3D Printer Bed Leveling & Nozzle Clog Troubleshooter",
+    "subsystem": "Heated Bed & Z-Offset Probe",
+    "symptom": "First Layer Warping / Dragging Filament / Spaghetti Print Failure",
+    "description": "Z-probe offset incorrect or heated bed surface contaminated with skin oils preventing polymer PEI adhesion.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can clean print bed, calibrate Z-offset, and adjust manual leveling thumbwheels.",
+    "initial_isolation_checks": [
+      "Wash textured PEI spring steel sheet with warm water and dish soap (degreaser); wipe with 90%+ Isopropyl Alcohol (IPA).",
+      "Preheat bed to 60 C for 5 minutes to achieve uniform thermal expansion before leveling.",
+      "Execute manual 4-corner paper leveling test: Paper should slide with slight resistance under nozzle at all 4 corners.",
+      "Live tune Z-offset downward in 0.02mm increments until extruded lines exhibit a continuous 50% squish without ridge plowing."
+    ],
+    "applicable_firmware": ">=v2.1.0",
+    "model_id": "Home 3D Printer Bed Leveling & Nozzle Clog Troubleshooter",
+    "requires_technician": false,
+    "initial_steps": [
+      "Wash textured PEI spring steel sheet with warm water and dish soap (degreaser); wipe with 90%+ Isopropyl Alcohol (IPA).",
+      "Preheat bed to 60 C for 5 minutes to achieve uniform thermal expansion before leveling.",
+      "Execute manual 4-corner paper leveling test: Paper should slide with slight resistance under nozzle at all 4 corners.",
+      "Live tune Z-offset downward in 0.02mm increments until extruded lines exhibit a continuous 50% squish without ridge plowing."
+    ],
+    "citation": "3D-BED-102_REF"
+  },
+  "3D-THRM-203": {
+    "code": "3D-THRM-203",
+    "model": "Home 3D Printer Bed Leveling & Nozzle Clog Troubleshooter",
+    "subsystem": "Hotend Thermistor & Heater Cartridge",
+    "symptom": "Loud Alarm Screaming 'THERMAL RUNAWAY' / Hotend Temperature Fluctuates +/- 15 C",
+    "description": "Firmware safety monitor detected temperature not responding proportionally to applied heater cartridge wattage.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can check thermistor retention screw and run PID auto-tune. Soldering mainboard drivers requires Electronics Technician.",
+    "initial_isolation_checks": [
+      "Inspect fragile glass thermistor wire in hotend heater block: Ensure retention screw is not pinching or cutting wires.",
+      "Ensure silicone insulating sock is tightly fitted over aluminum heater block to prevent part cooling fan breeze drafts.",
+      "Execute PID auto-tune via terminal or LCD menu ('M303 E0 S210 C8') to calibrate PID loop coefficients."
+    ],
+    "applicable_firmware": ">=v2.0.0",
+    "model_id": "Home 3D Printer Bed Leveling & Nozzle Clog Troubleshooter",
+    "requires_technician": false,
+    "initial_steps": [
+      "Inspect fragile glass thermistor wire in hotend heater block: Ensure retention screw is not pinching or cutting wires.",
+      "Ensure silicone insulating sock is tightly fitted over aluminum heater block to prevent part cooling fan breeze drafts.",
+      "Execute PID auto-tune via terminal or LCD menu ('M303 E0 S210 C8') to calibrate PID loop coefficients."
+    ],
+    "citation": "3D-THRM-203_REF"
+  },
+  "INV-BAT-001": {
+    "code": "INV-BAT-001",
+    "model": "Residential Inverter & Home Battery Backup Troubleshooter",
+    "subsystem": "12V/24V Tubular Lead-Acid / LFP Battery Bank",
+    "symptom": "Continuous Low Battery Buzzer / Inverter Shuts Down Within 30 Seconds of Grid Cut",
+    "description": "Battery terminal voltage collapses below 10.5V under load due to plate sulfation, low electrolyte, or weak cells.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can inspect electrolyte float indicators, top up with distilled water, and clean terminal corrosion with baking soda. Acid adjustments or replacement of battery cells requires Battery Technician.",
+    "initial_isolation_checks": [
+      "Inspect lead terminal posts for white/green lead sulfate powder: Clean with warm water and apply petroleum jelly.",
+      "Check electrolyte float levels across all 6 cell vents: Top up depleted cells with distilled water only (never tap water).",
+      "Measure open-circuit terminal voltage with multimeter: Fully charged 12V battery must read > 12.6V DC."
+    ],
+    "applicable_firmware": ">=v1.2.0",
+    "model_id": "Residential Inverter & Home Battery Backup Troubleshooter",
+    "requires_technician": false,
+    "initial_steps": [
+      "Inspect lead terminal posts for white/green lead sulfate powder: Clean with warm water and apply petroleum jelly.",
+      "Check electrolyte float levels across all 6 cell vents: Top up depleted cells with distilled water only (never tap water).",
+      "Measure open-circuit terminal voltage with multimeter: Fully charged 12V battery must read > 12.6V DC."
+    ],
+    "citation": "INV-BAT-001_REF"
+  },
+  "INV-OVR-102": {
+    "code": "INV-OVR-102",
+    "model": "Residential Inverter & Home Battery Backup Troubleshooter",
+    "subsystem": "MOSFET Inverter Bridge & Step-Up Transformer",
+    "symptom": "Overload Red LED Lit / Continuous Beeping / Inverter Tripping on Motor Start",
+    "description": "Total appliance wattage exceeds continuous rated VA capacity or motor inrush inductive surge trips protection.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can shed non-essential loads (irons, microwaves, water pumps) from backup circuit.",
+    "initial_isolation_checks": [
+      "Disconnect high-wattage inductive appliances (water pumps, space heaters, microwave ovens) from inverter sockets.",
+      "Locate the black 'Overload Reset' circuit breaker pin on the inverter rear panel and press firmly to reset.",
+      "Switch inverter to Mains Bypass mode to confirm household power restores normally."
+    ],
+    "applicable_firmware": ">=v1.0.0",
+    "model_id": "Residential Inverter & Home Battery Backup Troubleshooter",
+    "requires_technician": false,
+    "initial_steps": [
+      "Disconnect high-wattage inductive appliances (water pumps, space heaters, microwave ovens) from inverter sockets.",
+      "Locate the black 'Overload Reset' circuit breaker pin on the inverter rear panel and press firmly to reset.",
+      "Switch inverter to Mains Bypass mode to confirm household power restores normally."
+    ],
+    "citation": "INV-OVR-102_REF"
+  },
+  "INV-THRM-203": {
+    "code": "INV-THRM-203",
+    "model": "Residential Inverter & Home Battery Backup Troubleshooter",
+    "subsystem": "Cooling Fan & Aluminum Heat Sink",
+    "symptom": "Chassis Scorching Hot / Inverter Trips After 15 Minutes / Fan Silent",
+    "description": "Internal temperature sensor exceeds 85 C due to locked rotor cooling fan or blocked ventilation louvers.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can clear external dust louvers and verify fan rotation with power disconnected.",
+    "initial_isolation_checks": [
+      "Ensure inverter chassis has minimum 15cm clearance from walls on all sides; clear away stored boxes and clothing.",
+      "Vacuum rear fan intake grille to remove accumulated lint and pet hair.",
+      "Observe rear fan upon switching on heavy load: Verify cooling fan spools up smoothly without rattling or grinding."
+    ],
+    "applicable_firmware": ">=v1.1.0",
+    "model_id": "Residential Inverter & Home Battery Backup Troubleshooter",
+    "requires_technician": false,
+    "initial_steps": [
+      "Ensure inverter chassis has minimum 15cm clearance from walls on all sides; clear away stored boxes and clothing.",
+      "Vacuum rear fan intake grille to remove accumulated lint and pet hair.",
+      "Observe rear fan upon switching on heavy load: Verify cooling fan spools up smoothly without rattling or grinding."
+    ],
+    "citation": "INV-THRM-203_REF"
+  },
+  "GC-OVER-001": {
+    "code": "GC-OVER-001",
+    "model": "Gaming Console Overheating & Disk Drive Diagnostic Guide",
+    "subsystem": "Main APU SoC & Radial Blower Fan",
+    "symptom": "Jet Engine Fan Noise / Screen Message 'Your Console is Too Hot' / 3 Beeps & Shutdown",
+    "description": "APU silicon thermal junction temperature exceeds 95 C due to heatsink fins choked with dust or liquid metal oxidation.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can clean external vents and pop off outer faceplates to vacuum dust catches. Opening internal RF shield or re-spreading liquid metal / thermal paste requires Certified Gaming Hardware Specialist.",
+    "initial_isolation_checks": [
+      "Turn off console and unplug power cable; remove console from enclosed TV entertainment center into open ventilated area.",
+      "Pop off removable plastic side faceplates; locate dedicated triangular dust catcher holes and vacuum with gentle brush nozzle.",
+      "Inspect radial fan intake blades through grille with flashlight to check for heavy fibrous dust felting.",
+      "Ensure horizontal or vertical orientation allows unimpeded exhaust airflow at rear (minimum 10cm wall clearance)."
+    ],
+    "applicable_firmware": ">=v24.0.0",
+    "model_id": "Gaming Console Overheating & Disk Drive Diagnostic Guide",
+    "requires_technician": false,
+    "initial_steps": [
+      "Turn off console and unplug power cable; remove console from enclosed TV entertainment center into open ventilated area.",
+      "Pop off removable plastic side faceplates; locate dedicated triangular dust catcher holes and vacuum with gentle brush nozzle.",
+      "Inspect radial fan intake blades through grille with flashlight to check for heavy fibrous dust felting.",
+      "Ensure horizontal or vertical orientation allows unimpeded exhaust airflow at rear (minimum 10cm wall clearance)."
+    ],
+    "citation": "GC-OVER-001_REF"
+  },
+  "GC-DISK-102": {
+    "code": "GC-DISK-102",
+    "model": "Gaming Console Overheating & Disk Drive Diagnostic Guide",
+    "subsystem": "Blu-Ray Optical Pick-Up Unit (OPU)",
+    "symptom": "3 Repeated Clicking Sounds / 'Unrecognized Disc' Error / Disc Will Not Eject",
+    "description": "Optical laser lens dirty or disc drive mechanical roller mechanism out of alignment.",
+    "severity": "MEDIUM",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can clean game disc with microfiber cloth and use manual eject screw. Disassembling drive laser pickup requires Authorized Console Specialist.",
+    "initial_isolation_checks": [
+      "Inspect game disc bottom data surface for fingerprints, oily smudges, or radial scratches; wipe radially with damp microfiber cloth.",
+      "Test with known-good original Blu-ray movie or different game disc to determine if fault is disc-specific or drive-wide.",
+      "If disc is physically stuck inside drive, locate the manual emergency eject screw on the underside of drive bay and turn clockwise with #1 Phillips driver."
+    ],
+    "applicable_firmware": ">=v23.0.0",
+    "model_id": "Gaming Console Overheating & Disk Drive Diagnostic Guide",
+    "requires_technician": false,
+    "initial_steps": [
+      "Inspect game disc bottom data surface for fingerprints, oily smudges, or radial scratches; wipe radially with damp microfiber cloth.",
+      "Test with known-good original Blu-ray movie or different game disc to determine if fault is disc-specific or drive-wide.",
+      "If disc is physically stuck inside drive, locate the manual emergency eject screw on the underside of drive bay and turn clockwise with #1 Phillips driver."
+    ],
+    "citation": "GC-DISK-102_REF"
+  },
+  "GC-HDMI-203": {
+    "code": "GC-HDMI-203",
+    "model": "Gaming Console Overheating & Disk Drive Diagnostic Guide",
+    "subsystem": "HDMI 2.1 Transmitter & Port Pins",
+    "symptom": "White Power Light Lit But TV Displays 'No Signal' / Screen Flickering Sparkling Pixels",
+    "description": "HDMI TMDS/FRL differential pair high-speed pins bent, desoldered, or handshake EDID communication failing.",
+    "severity": "HIGH",
+    "requires_authorized_technician": false,
+    "technician_authorization_boundary": "User can swap HDMI cable, test different TV port, and perform safe mode resolution reset. Micro-soldering replacement HDMI 2.1 ports requires Certified Micro-Soldering Specialist.",
+    "initial_isolation_checks": [
+      "Power down console completely; press and hold power button until you hear a second beep (approx 7 seconds) to enter Safe Mode.",
+      "Select Safe Mode Option 2: 'Change Video Output' -> 'Change Resolution' -> set to 1080p to test if display handshakes.",
+      "Test with a certified Ultra High Speed (48 Gbps) HDMI 2.1 cable connected directly to TV (bypass soundbars or AV receivers).",
+      "Inspect rear HDMI port pins with phone flashlight: Check for bent copper pins or cracked plastic tongue."
+    ],
+    "applicable_firmware": ">=v22.0.0",
+    "model_id": "Gaming Console Overheating & Disk Drive Diagnostic Guide",
+    "requires_technician": false,
+    "initial_steps": [
+      "Power down console completely; press and hold power button until you hear a second beep (approx 7 seconds) to enter Safe Mode.",
+      "Select Safe Mode Option 2: 'Change Video Output' -> 'Change Resolution' -> set to 1080p to test if display handshakes.",
+      "Test with a certified Ultra High Speed (48 Gbps) HDMI 2.1 cable connected directly to TV (bypass soundbars or AV receivers).",
+      "Inspect rear HDMI port pins with phone flashlight: Check for bent copper pins or cracked plastic tongue."
+    ],
+    "citation": "GC-HDMI-203_REF"
   }
 }

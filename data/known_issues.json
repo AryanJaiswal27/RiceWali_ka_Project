@@ -1,0 +1,113 @@
+[
+  {
+    "id": "KI-AC-101",
+    "title": "Outdoor Condenser Fan Frost Seizure in Extreme Cold / Humid Weather",
+    "model": "Home Split AC Cooling & Gas Leak Troubleshooter",
+    "subsystem": "Outdoor Condenser Fan Motor",
+    "authority_tier": "known_issue",
+    "authority_score": 0.75,
+    "software_version_min": "v1.0.0",
+    "software_version_max": "v3.0.0",
+    "operating_conditions": "Outdoor ambient temperature < 4°C with freezing fog or wet snow",
+    "symptoms": ["buzzing sound from outdoor unit", "outdoor fan not spinning", "ice accumulation on fan blades", "room air not warming"],
+    "summary": "Frost buildup can mechanically jam outdoor fan blades during reverse-cycle heat pump heating in near-freezing moist weather.",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Switch off mains electrical isolator switch near the outdoor condenser unit.",
+        "requires_technician": false,
+        "hazard_notice": "Ensure power is completely cut before reaching near fan shroud."
+      },
+      {
+        "step": 2,
+        "action": "Visually inspect fan grille. If ice bridges blades to shroud, gently pour 2 liters of warm tap water (40-50°C) across fan hub to melt ice bridge.",
+        "requires_technician": false,
+        "hazard_notice": "Do not strike fan blades with hammer or sharp objects as plastic may fracture."
+      },
+      {
+        "step": 3,
+        "action": "Ensure bottom drain holes in outdoor unit base-pan are cleared of autumn leaves and ice plugs.",
+        "requires_technician": false,
+        "hazard_notice": "Inspect condensate drainage pathway."
+      },
+      {
+        "step": 4,
+        "action": "Restore isolator switch and engage Defrost Heat cycle from remote controller.",
+        "requires_technician": false,
+        "hazard_notice": "Allow 10 minutes for automated heat pump defrost cycle to complete."
+      }
+    ]
+  },
+  {
+    "id": "KI-WM-201",
+    "title": "Front-Load Washer Walking & Drum Thumping on Bulky Laundry Load (UE / Ub Code)",
+    "model": "Front-Load Washing Machine Motor & Drain Pump Assistant",
+    "subsystem": "Drum Suspension & Out-of-Balance Sensor",
+    "authority_tier": "known_issue",
+    "authority_score": 0.75,
+    "software_version_min": "v1.0.0",
+    "software_version_max": "v3.5.0",
+    "operating_conditions": "Washing single heavy item (bedsheet, rug, heavy bathmat) or unlevel tile flooring",
+    "symptoms": ["machine moving across floor", "violent thumping during spin", "display shows UE or Ub", "spin cycle stops repeatedly"],
+    "summary": "Single bulky item bunches into one side of drum, triggering centrifugal acceleration imbalance protection.",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Press Pause button and wait 60 seconds for door lock solenoid to release.",
+        "requires_technician": false,
+        "hazard_notice": "Do not force door handle while lock symbol is lit."
+      },
+      {
+        "step": 2,
+        "action": "Open door and redistribute wet laundry evenly around circumference of stainless steel drum; add 2 smaller dry towels to balance center of mass.",
+        "requires_technician": false,
+        "hazard_notice": "Avoid washing single heavy wet articles in isolation."
+      },
+      {
+        "step": 3,
+        "action": "Place spirit bubble level on top metal lid; rotate adjustable front rubber feet until bubble is centered, then tighten locking nuts.",
+        "requires_technician": false,
+        "hazard_notice": "All 4 feet must make firm friction contact with floor."
+      },
+      {
+        "step": 4,
+        "action": "Select Spin Only program at reduced 800 RPM instead of maximum 1400 RPM.",
+        "requires_technician": false,
+        "hazard_notice": "Reduced RPM prevents excessive centrifugal shock."
+      }
+    ]
+  },
+  {
+    "id": "KI-REF-301",
+    "title": "Dual Evaporator Refrigerator Fan Ticking Sound Due to Frost Ice Growth",
+    "model": "Frost-Free French Door Refrigerator",
+    "subsystem": "Freezer Air Circulation Fan",
+    "authority_tier": "known_issue",
+    "authority_score": 0.78,
+    "software_version_min": "v1.0.0",
+    "software_version_max": "v2.5.0",
+    "operating_conditions": "Humid summer weather, freezer door left ajar, or warm food placed in freezer",
+    "symptoms": ["ticking or chirping sound from freezer", "fan stops when door is opened", "fresh food section warm", "ice on rear panel"],
+    "summary": "Warm moist air infiltration causes frost buildup along circulation fan cowl, producing clicking noise as blade tips strike frost.",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Perform dollar bill seal test: Close freezer door on a paper currency note and pull. It should offer firm resistance along entire magnetic perimeter.",
+        "requires_technician": false,
+        "hazard_notice": "Clean any sticky syrup or ice crystals from rubber door gasket."
+      },
+      {
+        "step": 2,
+        "action": "Verify freezer food packages are placed at least 5cm away from rear return air louvers to allow unobstructed convective airflow.",
+        "requires_technician": false,
+        "hazard_notice": "Do not block air return ports with bulk frozen bags."
+      },
+      {
+        "step": 3,
+        "action": "Initiate Manual Forced Defrost (Fd mode) from digital control panel (Press Energy Saver + Power Freeze for 8 seconds).",
+        "requires_technician": false,
+        "hazard_notice": "System will activate defrost element for 25 minutes to melt fan shroud frost."
+      }
+    ]
+  }
+]

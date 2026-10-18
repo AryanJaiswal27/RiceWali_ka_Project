@@ -18,6 +18,9 @@ venv/
 .venv/
 env/
 
+# Archives
+*.zip
+
 # IDE & Editor caches
 .vscode/
 .idea/

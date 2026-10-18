@@ -1,0 +1,148 @@
+[
+  {
+    "id": "SB-AC-2026-04",
+    "title": "Inverter AC Flare Nut Micro-Leak & Sensor Recalibration",
+    "model": "Home Split AC Cooling & Gas Leak Troubleshooter",
+    "subsystem": "Refrigerant Circuit & Flare Fittings",
+    "authority_tier": "service_bulletin",
+    "authority_score": 0.95,
+    "software_version_min": "v2.0.0",
+    "software_version_max": "v2.5.0",
+    "operating_conditions": "High ambient temperature (>35°C) or prolonged continuous cooling",
+    "summary": "Urgent bulletin for flare nut torque relaxation causing low suction pressure (<70 PSI) and false icing detection.",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Switch AC to Fan-Only mode for 30 minutes to clear surface frost from evaporator coil before inspection.",
+        "requires_technician": false,
+        "hazard_notice": "Non-disruptive customer step."
+      },
+      {
+        "step": 2,
+        "action": "Inspect outdoor service valve flare nuts using neutral soapy solution for bubble formation indicating active gas release.",
+        "requires_technician": false,
+        "hazard_notice": "Do not use open flame or smoke near service ports."
+      },
+      {
+        "step": 3,
+        "action": "Verify indoor display firmware revision by pressing Sleep button 4 times within 3 seconds.",
+        "requires_technician": false,
+        "hazard_notice": "Diagnostic keypad sequence."
+      },
+      {
+        "step": 4,
+        "action": "Halt procedure: Certified HVAC Technician must connect manifold gauge, re-torque brass flare nuts to 18 Nm, and verify R32 suction pressure at 125 PSI.",
+        "requires_technician": true,
+        "hazard_notice": "MANDATORY SAFETY HALT: Pressurized R32 flammable refrigerant handling requires EPA Universal Certification."
+      }
+    ]
+  },
+  {
+    "id": "SB-WM-2026-02",
+    "title": "Front-Load Washer Inverter Motor Tachometer Calibration & Drain Interlock",
+    "model": "Front-Load Washing Machine Motor & Drain Pump Assistant",
+    "subsystem": "Direct Drive Motor & Drain Control",
+    "authority_tier": "service_bulletin",
+    "authority_score": 0.92,
+    "software_version_min": "v1.2.0",
+    "software_version_max": "v3.0.0",
+    "operating_conditions": "Excessive foam or unbalanced drum load during spin cycle",
+    "summary": "Advisory on intermittent E20/OE drain timeouts caused by detergent oversudsing and debris trap cavitation.",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Isolate mains electrical plug and open lower-right service flap to drain standing water via emergency rubber hose into a shallow tray.",
+        "requires_technician": false,
+        "hazard_notice": "Disconnect 230V mains plug before opening coin trap."
+      },
+      {
+        "step": 2,
+        "action": "Unscrew cylindrical debris filter counter-clockwise; wash out trapped coins, hairpins, and lint sediment under warm water.",
+        "requires_technician": false,
+        "hazard_notice": "Hot water burn hazard if cycle was run above 60°C."
+      },
+      {
+        "step": 3,
+        "action": "Perform Drum Clean cycle with 500ml white vinegar and no laundry to clear pressure transducer tube of residual suds film.",
+        "requires_technician": false,
+        "hazard_notice": "Maintenance cleaning cycle."
+      },
+      {
+        "step": 4,
+        "action": "Halt procedure: Authorized Service Specialist must test drain pump motor winding resistance (must read 160-180 Ohms) and inspect impeller triac on main PCB.",
+        "requires_technician": true,
+        "hazard_notice": "MANDATORY SAFETY HALT: 230V live electrical circuit testing requires certified technician."
+      }
+    ]
+  },
+  {
+    "id": "SB-MW-2026-01",
+    "title": "Smart Inverter Microwave Waveguide Mica Arc Protection",
+    "model": "Smart Inverter Microwave Oven",
+    "subsystem": "High-Voltage Inverter PCB & Magnetron",
+    "authority_tier": "service_bulletin",
+    "authority_score": 0.95,
+    "software_version_min": "v1.0.0",
+    "software_version_max": "v4.0.0",
+    "operating_conditions": "Sparking, crackling sound, or burnt odor inside heating cavity",
+    "summary": "Critical safety bulletin: Food splatter carbonization on mica waveguide plate causing high-voltage RF flashover.",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Immediately unplug power cord from wall outlet and do not operate microwave oven.",
+        "requires_technician": false,
+        "hazard_notice": "Immediate power disconnection required."
+      },
+      {
+        "step": 2,
+        "action": "Inspect mica waveguide cover plate on right interior wall of cavity for black carbon burn spots, holes, or oil coating.",
+        "requires_technician": false,
+        "hazard_notice": "Ensure oven interior has cooled down completely."
+      },
+      {
+        "step": 3,
+        "action": "If mica plate is lightly soiled with food grease without burn marks, clean gently with warm damp microfiber cloth and allow 2 hours to dry.",
+        "requires_technician": false,
+        "hazard_notice": "Do not scrub with abrasive pads."
+      },
+      {
+        "step": 4,
+        "action": "Halt procedure: Certified Electronics Technician must discharge 4,000V high-voltage capacitor using 20k bleeder resistor probe before servicing magnetron antenna.",
+        "requires_technician": true,
+        "hazard_notice": "CRITICAL LETHAL VOLTAGE: High-voltage capacitor retains 4,000V DC even after unplugging."
+      }
+    ]
+  },
+  {
+    "id": "SB-REF-2026-03",
+    "title": "French Door Refrigerator Evaporator Drain Line De-icing & Heater Firmware Update",
+    "model": "Frost-Free French Door Refrigerator",
+    "subsystem": "Dual Evaporator & Defrost Drain",
+    "authority_tier": "service_bulletin",
+    "authority_score": 0.90,
+    "software_version_min": "v1.0.0",
+    "software_version_max": "v2.4.0",
+    "operating_conditions": "High ambient humidity (>70% RH) or frequent door openings",
+    "summary": "Service bulletin addressing condensate drain trough freezing, resulting in sheet ice under vegetable crisper drawers.",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Remove lower crisper glass drawers and inspect defrost drain hole trough at rear bottom of fresh food compartment.",
+        "requires_technician": false,
+        "hazard_notice": "Handle glass crisper shelves with care."
+      },
+      {
+        "step": 2,
+        "action": "Flush drain hole with hot water (60°C) using a turkey baster or silicone syringe until water flows freely into rear compressor drain pan.",
+        "requires_technician": false,
+        "hazard_notice": "Do not use boiling water or sharp metal screwdrivers."
+      },
+      {
+        "step": 3,
+        "action": "Halt procedure: Certified Refrigerator Technician must install extended copper heat-sink drain clip to defrost element and update controller firmware.",
+        "requires_technician": true,
+        "hazard_notice": "MANDATORY SAFETY HALT: Evaporator panel disassembly exposes sealed refrigeration lines and 230V defrost heater."
+      }
+    ]
+  }
+]

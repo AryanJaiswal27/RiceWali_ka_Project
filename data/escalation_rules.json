@@ -1,0 +1,105 @@
+[
+  {
+    "id": "ESC-RULE-HVAC-01",
+    "title": "EPA Section 608 Refrigerant Circuit & Pressure Boundary Escalation Rule",
+    "model": "Home Split AC Cooling & Gas Leak Troubleshooter",
+    "subsystem": "Refrigeration Pressure Loop",
+    "authority_tier": "escalation_rule",
+    "authority_score": 1.0,
+    "software_version_min": "ANY",
+    "software_version_max": "ANY",
+    "operating_conditions": "Suction pressure under 70 PSI, flare joint oil residue, active refrigerant bubbling, or burnt smell from compressor",
+    "summary": "Mandatory regulatory boundary: Non-certified users must never pierce, gauge-tap, evacuate, or charge closed refrigerant circuits.",
+    "boundary_policy": "Under Clean Air Act Section 608 and UL 60335-2-40, servicing flammable A2L refrigerants (R32) requires certified EPA Universal credentials and explosion-proof tooling.",
+    "mandated_qualification": "EPA Universal / Level-2 Certified HVAC Field Technician",
+    "mandated_tools": [
+      "Digital Micron Vacuum Gauge (Target: <500 microns)",
+      "Spark-Proof Recovery Machine & Dedicated R32 Recovery Cylinder",
+      "Dry Nitrogen Tank with 0-600 PSI Calibrated Regulator",
+      "Electronic Halogen Heated-Diode Leak Detector"
+    ],
+    "sla_tier": "Priority 1 - Field dispatch required within 4 hours if active odor or oil discharge is present",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Immediate Customer Directive: Switch AC off at mains breaker. Do not reset circuit breaker if it trips repeatedly.",
+        "requires_technician": false,
+        "hazard_notice": "Prevents compressor motor burnout and explosive thermal breakdown."
+      },
+      {
+        "step": 2,
+        "action": "Halt procedure: Dispatch EPA Certified HVAC Technician. Technician must connect dry nitrogen at 450 PSI for 24-hr pressure decay test, replace defective flare copper, vacuum down to 500 microns, and charge factory weight R32 by digital electronic scale.",
+        "requires_technician": true,
+        "hazard_notice": "MANDATORY TECHNICIAN ESCALATION: Hazardous pressurized refrigerant and flammable A2L gas hazard."
+      }
+    ]
+  },
+  {
+    "id": "ESC-RULE-ELEC-02",
+    "title": "High-Voltage DC Bus & Capacitive Energy Storage Escalation Rule",
+    "model": "ALL_MODELS",
+    "subsystem": "Inverter Power Electronics & Motor Drives",
+    "authority_tier": "escalation_rule",
+    "authority_score": 1.0,
+    "software_version_min": "ANY",
+    "software_version_max": "ANY",
+    "operating_conditions": "Inverter PCB failure, burnt silicon odor, motor winding short circuit, or DC bus capacitor testing",
+    "summary": "Mandatory electrical safety boundary: DC link capacitors retain lethal voltage (380V to 4,000V DC) for up to 10 minutes following mains isolation.",
+    "boundary_policy": "NFPA 70E and IEC 60335 safety standards mandate that live-chassis electrical measurements must only be performed by licensed appliance service technicians using insulated CAT-III equipment.",
+    "mandated_qualification": "Certified Appliance Service Technician / Licensed Electrical Specialist",
+    "mandated_tools": [
+      "600V CAT-III Insulated True-RMS Digital Multimeter",
+      "High-Voltage Ceramic Bleeder Discharge Probe (20k Ohm / 50W)",
+      "Arc-Rated Class 0 Insulating Gloves (1,000V rated)"
+    ],
+    "sla_tier": "Priority 2 - Scheduled on-site diagnostic service within 24 hours",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Immediate Customer Directive: Switch off appliance power at dedicated wall MCB. Disconnect power cord from wall outlet. Keep clear of rear cabinet access covers.",
+        "requires_technician": false,
+        "hazard_notice": "Lock-out power source immediately."
+      },
+      {
+        "step": 2,
+        "action": "Halt procedure: Certified Electrical Technician must verify 0V DC across electrolytic capacitor terminals with CAT-III meter before inspecting inverter power module (IPM) or motor stator winding resistance.",
+        "requires_technician": true,
+        "hazard_notice": "CRITICAL LETHAL VOLTAGE HAZARD: DC bus capacitors store up to 380V-4,000V DC energy."
+      }
+    ]
+  },
+  {
+    "id": "ESC-RULE-GAS-03",
+    "title": "Gas Supply Appliance Fuel Line Isolation & Flue Spillage Escalation Rule",
+    "model": "ALL_MODELS",
+    "subsystem": "Natural Gas / Propane Gas Valve & Burner Assembly",
+    "authority_tier": "escalation_rule",
+    "authority_score": 1.0,
+    "software_version_min": "ANY",
+    "software_version_max": "ANY",
+    "operating_conditions": "Gas odor (mercaptan rotten-egg smell), CO alarm sounding, soot accumulation on burner, or yellow burner flames",
+    "summary": "Mandatory life safety policy: Any detected fuel gas leak or carbon monoxide anomaly requires immediate evacuation and emergency gas technician dispatch.",
+    "boundary_policy": "National Fuel Gas Code (NFPA 54) prohibits non-certified individuals from disassembling, adjusting, or relighting compromised gas valve trains.",
+    "mandated_qualification": "Licensed Gas Fitter / Certified Gas Appliance Field Specialist",
+    "mandated_tools": [
+      "Calibrated Combustible Gas Sniffer (LEL Detector)",
+      "Digital Electronic Manometer for Gas Manifold Pressure (0-14 in. w.c.)",
+      "Ambient Carbon Monoxide (CO) Personal Safety Monitor"
+    ],
+    "sla_tier": "Emergency Priority 0 - Immediate fuel isolation and emergency gas utility notification",
+    "ordered_checks": [
+      {
+        "step": 1,
+        "action": "Immediate Customer Directive: Turn off yellow manual gas shutoff valve immediately. Do not operate light switches, do not touch electrical appliances, and open windows to ventilate area.",
+        "requires_technician": false,
+        "hazard_notice": "EXPLOSION & POISONING HAZARD: Do not create electrical sparks."
+      },
+      {
+        "step": 2,
+        "action": "Halt procedure: Licensed Gas Service Technician must perform 10 PSI differential pressure drop test across gas line, inspect thermocouple/flame rectification sensor, and certify zero combustible gas ppm before restoring supply.",
+        "requires_technician": true,
+        "hazard_notice": "CRITICAL EXPLOSION HAZARD: Live fuel gas testing requires certified gas fitter."
+      }
+    ]
+  }
+]

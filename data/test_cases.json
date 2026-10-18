@@ -1,0 +1,40 @@
+{
+  "_help": "Test cases for evaluation.py. 'expected_any' = the manual procedure(s) or bulletin(s) that SHOULD be found in the top results.",
+
+  "retrieval_tests": [
+    {"query": "ice on the indoor unit and warm air is coming out", "product": "Home Split AC Cooling & Gas Leak Troubleshooter", "expected_any": ["AC-01", "AC-02", "SB-AC-2026-04", "KI-AC-101"]},
+    {"query": "water stays in the drum and the machine will not drain", "product": "Front-Load Washing Machine Motor & Drain Pump Assistant", "expected_any": ["WM-01", "SB-WM-2026-02", "KI-WM-201"]},
+    {"query": "back cover is lifting because the battery is swollen", "product": "Smartphone Screen & Battery Replacement Safety Guide", "expected_any": ["SP-01"]},
+    {"query": "phone does not charge, charging port has lint", "product": "Smartphone Screen & Battery Replacement Safety Guide", "expected_any": ["SP-03"]},
+    {"query": "coffee grinder is jammed and makes noise", "product": "Automatic Espresso Coffee Machine Descaling & Pressure Assistant", "expected_any": ["CF-03"]},
+    {"query": "microwave door does not latch and oven will not start", "product": "Microwave Oven Magnetron & Door Interlock Safety Assistant", "expected_any": ["MW-01"]},
+    {"query": "filament does not stick to the bed on the first layer", "product": "Home 3D Printer Bed Leveling & Nozzle Clog Troubleshooter", "expected_any": ["3D-02"]},
+    {"query": "nozzle is clogged and no filament comes out", "product": "Home 3D Printer Bed Leveling & Nozzle Clog Troubleshooter", "expected_any": ["3D-01"]},
+    {"query": "console fan is very loud and it overheats", "product": "Gaming Console Overheating & Disk Drive Diagnostic Guide", "expected_any": ["GC-01"]},
+    {"query": "disc is stuck inside the console and will not eject", "product": "Gaming Console Overheating & Disk Drive Diagnostic Guide", "expected_any": ["GC-02"]},
+    {"query": "purified water tastes salty and TDS is high", "product": "Home RO Water Purifier Filter & Membrane Monitor", "expected_any": ["RO-02"]},
+    {"query": "scooter throttle does not respond when I twist it", "product": "Electric Scooter Throttle & Charger Diagnostic Tool", "expected_any": ["ES-01"]}
+  ],
+
+  "tool_tests": [
+    {"code": "AC-GAS-001", "expect_found": true,  "expect_product": "Home Split AC Cooling & Gas Leak Troubleshooter"},
+    {"code": "mw-mag-102", "expect_found": true,  "expect_product": "Microwave Oven Magnetron & Door Interlock Safety Assistant"},
+    {"code": " WM-DRN-001 ", "expect_found": true, "expect_product": "Front-Load Washing Machine Motor & Drain Pump Assistant"},
+    {"code": "XX-FAKE-999", "expect_found": false},
+    {"code": "", "expect_found": false}
+  ],
+
+  "extraction_tests": [
+    {
+      "input": "My Home Split AC v2.1.0 is blowing warm air at 38C ambient temp and evaporator is iced with code AC-GAS-001",
+      "expected_model": "Home Split AC Cooling & Gas Leak Troubleshooter",
+      "expected_version": "v2.1.0",
+      "expected_code": "AC-GAS-001"
+    },
+    {
+      "input": "Front-Load Washing machine fails to drain during spin cycle with drum full of water",
+      "expected_model": "Front-Load Washing Machine Motor & Drain Pump Assistant",
+      "expected_condition_key": "operational_cycle"
+    }
+  ]
+}
